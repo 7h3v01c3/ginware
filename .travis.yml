@@ -1,0 +1,44 @@
+language: python
+matrix:
+  fast_finish: true
+  include:
+    - name: "GINware for Windows [Python 3.6.7]"
+      os: windows
+      language: shell
+      before_install:
+        - choco install python --version 3.6.7 --x86
+        - pip3 install pywin32
+        - pip3 install -r requirements.txt 
+      env:
+        - PATH="/c/Python36:/c/Python36/Scripts:/c/Program Files (x86)/Windows Kits/10/Redist/ucrt/DLLs/x86:$PATH"
+        - OSSTR=win32
+      after_success: sha256sum ../dist/all/*
+    - name: "GINware for macOS [Python 3.7.2]"
+      os: osx
+      osx_image: xcode10.2
+      language: shell
+      before_install:
+        - pip3 install pyinstaller
+        - pip3 install --user -r requirements.txt 
+      env: OSSTR=mac
+      after_success: openssl dgst -sha256 ../dist/all/*
+    - name: "GINware for Linux [Python 3.6]"
+      python: 3.6
+      before_install:
+        - sudo apt-get -y install libudev-dev libusb-1.0-0-dev libfox-1.6-dev autotools-dev autoconf automake libtool libpython3-all-dev git cmake python3-setuptools
+        - pip install --upgrade setuptools
+      env: OSSTR=linux
+      after_success: sha256sum ../dist/all/*
+script:
+  - pyinstaller --distpath=../dist/$OSSTR --workpath=../build/$OSSTR ginware.spec
+deploy:
+  provider: releases
+  overwrite: true
+  skip_cleanup: true
+  draft: true
+  on:
+    tags: true
+  api_key:
+    secure: i+owpWxc/4fDNFgiGHG5uaDwP56OB5k1o5OztdY82aQbzgOnZlDR+KBqQPPW99g8htd7tRiNxlkdoz+2C9i9epSomxIE5eBxzALxiUOUYmhu44h6TEsBTddjeMPb/zx21yAPcUgQsG5oBjuIl69eKYR/+cSu0/lLWDL/C6Vc7OkX+qRtc55wkyGpgksmtUn24VkOdOYbtj81BH6CFdOxkf6aXTc8RJlBUfQPAn4rbY4uJC1NkGP3YAkCUQCNrHjQL0w2vtFov/HmO1ivmQr57GXKR+Yod2+oPOxYzYavKwQ4zzUgkSUBw8iU8mH0EU8Stmlg0f/y5AxcAXz+Oo0zeY+JFbuk5W1qbSmjsKmGxXx399cm4YV2Radpz78Egg8PVAR0MiiulkGC4fHr984NL0L/xuOBOwqQWOta6+IUQ1KTVKu69kclT3T6UM6SPlMZY3RXl1nz1tNXVljGz+pBM/n5ScpuEb7zrW0GOWmJd3D5qn073ks2KJ5XxNz3QMvl44ve5EjAiJKHX3Z+BFPk4PmSpmNf++6ZE5csBwzrYiumC6VwiBIsMv1PJD7Q5dMl9uGAif/dNijg9z54SYKtjadxjWr92qyWmkYkcaoXshxRBpvV1LuErMYuVGYdZ6/kbkdib2/TVfVYEVMwk4igdlxtZCWakhKezGsMHnDVoGc=
+  file_glob: true
+  file: "../dist/all/*"

@@ -214,7 +214,7 @@ class ListCollateralTxsDlg(QDialog, ui_find_coll_tx_dlg.Ui_ListCollateralTxsDlg,
     def display_title(self):
         if len(self.utxos):
             if self.read_only:
-                msg = f'<span>Found 1000 Dash transaction(s):</span>'
+                msg = f'<span>Found 1000 GIN transaction(s):</span>'
             else:
                 msg = f'<span><b>Select the appropriate UTXO then press the &lt;Apply&gt; button or ' \
                     f'double click on the corresponding row.</b></span>'
@@ -222,7 +222,7 @@ class ListCollateralTxsDlg(QDialog, ui_find_coll_tx_dlg.Ui_ListCollateralTxsDlg,
             self.lblMessage.setText(msg)
             self.lblMessage.setVisible(True)
         else:
-            self.lblMessage.setText('<span style="color:red"><b>Found no unspent 1000 Dash transactions in your '
+            self.lblMessage.setText('<span style="color:red"><b>Found no unspent 1000 GIN transactions in your '
                                     'wallet</b></span>')
             self.lblMessage.setVisible(True)
 
@@ -240,7 +240,7 @@ class ListCollateralTxsDlg(QDialog, ui_find_coll_tx_dlg.Ui_ListCollateralTxsDlg,
             if mn:
                 if mn != self.edited_masternode and self.edited_masternode:
                     if wnd_utils.WndUtils.queryDlg(
-                        "Do you really want to use the utxo that is already assigned to another masternode configuration?",
+                        "This UTXO is already assigned to one of your masternodes!\n\nDo you really want to proceed?",
                         buttons=QMessageBox.Yes | QMessageBox.Cancel,
                         default_button=QMessageBox.Cancel, icon=QMessageBox.Warning) == QMessageBox.Cancel:
                         return False

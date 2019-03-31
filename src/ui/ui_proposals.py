@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 
-# Form implementation generated from reading ui file '/Users/blogin/PycharmProjects/DMT-git/src/ui/ui_proposals.ui'
+# Form implementation generated from reading ui file 'ui_proposals.ui'
 #
-# Created by: PyQt5 UI code generator 5.9.2
+# Created by: PyQt5 UI code generator 5.11.3
 #
 # WARNING! All changes made in this file will be lost!
 
@@ -281,7 +281,7 @@ class Ui_ProposalsDlg(object):
         self.btnVoteYesForAll.setToolTip(_translate("ProposalsDlg", "Vote Yes for all masternodes."))
         self.btnVoteYesForAll.setText(_translate("ProposalsDlg", "Yes For All"))
         self.tabsDetails.setTabText(self.tabsDetails.indexOf(self.tabVoting), _translate("ProposalsDlg", "Vote"))
-        self.btnVotesRefresh.setToolTip(_translate("ProposalsDlg", "Reads new votes from the Dash network"))
+        self.btnVotesRefresh.setToolTip(_translate("ProposalsDlg", "Reads new votes from the GINcoin network"))
         self.btnVotesRefresh.setText(_translate("ProposalsDlg", "Refresh"))
         self.btnVotesSaveToCSV.setText(_translate("ProposalsDlg", "Save to CSV..."))
         self.chbOnlyMyVotes.setText(_translate("ProposalsDlg", "Show my votes only"))

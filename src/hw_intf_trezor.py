@@ -21,7 +21,7 @@ from trezorlib import messages as trezor_proto, exceptions, btc, messages
 from trezorlib.ui import PIN_CURRENT, PIN_NEW, PIN_CONFIRM
 from trezorlib.transport import enumerate_devices, get_transport
 from trezorlib import device
-from trezorlib import coins
+import trezor_coins as coins
 
 import dash_utils
 from common import CancelException

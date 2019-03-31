@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Form implementation generated from reading ui file '/Users/blogin/PycharmProjects/DMT-git/src/ui/ui_transaction_dlg.ui'
+# Form implementation generated from reading ui file 'ui_transaction_dlg.ui'
 #
 # Created by: PyQt5 UI code generator 5.9.2
 #
@@ -101,7 +101,8 @@ class Ui_TransactionDlg(object):
         self.chb_word_wrap.setText(_translate("TransactionDlg", "Word wrap"))
         self.btn_details.setText(_translate("TransactionDlg", "Show Details"))
         self.btn_close.setText(_translate("TransactionDlg", "Close"))
-        self.btn_broadcast.setText(_translate("TransactionDlg", "Send Transaction"))
+        self.btn_broadcast.setText(_translate("TransactionDlg", " Send Transaction "))
+
 
 
 if __name__ == "__main__":

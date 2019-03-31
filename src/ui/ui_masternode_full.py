@@ -1,0 +1,123 @@
+# -*- coding: utf-8 -*-
+
+# Form implementation generated from reading ui file 'ui_masternode_full.ui'
+#
+# Created by: PyQt5 UI code generator 5.9.2
+#
+# WARNING! All changes made in this file will be lost!
+
+from PyQt5 import QtCore, QtGui, QtWidgets
+
+class Ui_MasternodeFull(object):
+    def setupUi(self, MasternodeFull):
+        MasternodeFull.setObjectName("MasternodeFull")
+        MasternodeFull.resize(977, 567)
+        MasternodeFull.setModal(True)
+        self.verticalLayout = QtWidgets.QVBoxLayout(MasternodeFull)
+        self.verticalLayout.setContentsMargins(3, 3, 3, 3)
+        self.verticalLayout.setSpacing(4)
+        self.verticalLayout.setObjectName("verticalLayout")
+        self.tabWidget = QtWidgets.QTabWidget(MasternodeFull)
+        self.tabWidget.setObjectName("tabWidget")
+        self.my_mns_tab = QtWidgets.QWidget()
+        self.my_mns_tab.setObjectName("my_mns_tab")
+        self.gridLayout = QtWidgets.QGridLayout(self.my_mns_tab)
+        self.gridLayout.setObjectName("gridLayout")
+        self.myMnsTable = QtWidgets.QTableView(self.my_mns_tab)
+        self.myMnsTable.setAlternatingRowColors(True)
+        self.myMnsTable.setSelectionMode(QtWidgets.QAbstractItemView.NoSelection)
+        self.myMnsTable.setVerticalScrollMode(QtWidgets.QAbstractItemView.ScrollPerPixel)
+        self.myMnsTable.setHorizontalScrollMode(QtWidgets.QAbstractItemView.ScrollPerPixel)
+        self.myMnsTable.setSortingEnabled(True)
+        self.myMnsTable.setObjectName("myMnsTable")
+        self.myMnsTable.horizontalHeader().setDefaultSectionSize(99)
+        self.myMnsTable.horizontalHeader().setStretchLastSection(True)
+        self.myMnsTable.verticalHeader().setVisible(False)
+        self.gridLayout.addWidget(self.myMnsTable, 1, 0, 1, 1)
+        self.lblMyMasternodesWarning = QtWidgets.QLabel(self.my_mns_tab)
+        self.lblMyMasternodesWarning.setTextFormat(QtCore.Qt.RichText)
+        self.lblMyMasternodesWarning.setObjectName("lblMyMasternodesWarning")
+        self.gridLayout.addWidget(self.lblMyMasternodesWarning, 0, 0, 1, 1)
+        self.tabWidget.addTab(self.my_mns_tab, "")
+        self.all_mns_tab = QtWidgets.QWidget()
+        self.all_mns_tab.setObjectName("all_mns_tab")
+        self.gridLayout_2 = QtWidgets.QGridLayout(self.all_mns_tab)
+        self.gridLayout_2.setObjectName("gridLayout_2")
+        self.allMnsTable = QtWidgets.QTableView(self.all_mns_tab)
+        self.allMnsTable.setAlternatingRowColors(True)
+        self.allMnsTable.setSelectionMode(QtWidgets.QAbstractItemView.NoSelection)
+        self.allMnsTable.setVerticalScrollMode(QtWidgets.QAbstractItemView.ScrollPerPixel)
+        self.allMnsTable.setHorizontalScrollMode(QtWidgets.QAbstractItemView.ScrollPerPixel)
+        self.allMnsTable.setSortingEnabled(True)
+        self.allMnsTable.setObjectName("allMnsTable")
+        self.allMnsTable.horizontalHeader().setStretchLastSection(True)
+        self.allMnsTable.verticalHeader().setVisible(False)
+        self.gridLayout_2.addWidget(self.allMnsTable, 2, 0, 1, 1)
+        self.horizontalLayout_2 = QtWidgets.QHBoxLayout()
+        self.horizontalLayout_2.setContentsMargins(-1, 0, -1, -1)
+        self.horizontalLayout_2.setObjectName("horizontalLayout_2")
+        spacerItem = QtWidgets.QSpacerItem(40, 20, QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Minimum)
+        self.horizontalLayout_2.addItem(spacerItem)
+        self.lblMasternodesFullCount = QtWidgets.QLabel(self.all_mns_tab)
+        self.lblMasternodesFullCount.setObjectName("lblMasternodesFullCount")
+        self.horizontalLayout_2.addWidget(self.lblMasternodesFullCount)
+        self.gridLayout_2.addLayout(self.horizontalLayout_2, 1, 0, 1, 1)
+        self.tabWidget.addTab(self.all_mns_tab, "")
+        self.verticalLayout.addWidget(self.tabWidget)
+        self.horizontalLayout = QtWidgets.QHBoxLayout()
+        self.horizontalLayout.setSpacing(6)
+        self.horizontalLayout.setObjectName("horizontalLayout")
+        self.btnMasternodesFullRefresh = QtWidgets.QToolButton(MasternodeFull)
+        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Maximum, QtWidgets.QSizePolicy.Minimum)
+        sizePolicy.setHorizontalStretch(0)
+        sizePolicy.setVerticalStretch(0)
+        sizePolicy.setHeightForWidth(self.btnMasternodesFullRefresh.sizePolicy().hasHeightForWidth())
+        self.btnMasternodesFullRefresh.setSizePolicy(sizePolicy)
+        self.btnMasternodesFullRefresh.setIconSize(QtCore.QSize(14, 14))
+        self.btnMasternodesFullRefresh.setToolButtonStyle(QtCore.Qt.ToolButtonTextBesideIcon)
+        self.btnMasternodesFullRefresh.setObjectName("btnMasternodesFullRefresh")
+        self.horizontalLayout.addWidget(self.btnMasternodesFullRefresh)
+        spacerItem1 = QtWidgets.QSpacerItem(40, 20, QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Minimum)
+        self.horizontalLayout.addItem(spacerItem1)
+        self.lblMasternodesFullMessage = QtWidgets.QLabel(MasternodeFull)
+        self.lblMasternodesFullMessage.setText("")
+        self.lblMasternodesFullMessage.setObjectName("lblMasternodesFullMessage")
+        self.horizontalLayout.addWidget(self.lblMasternodesFullMessage)
+        spacerItem2 = QtWidgets.QSpacerItem(40, 20, QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Minimum)
+        self.horizontalLayout.addItem(spacerItem2)
+        self.buttonBox = QtWidgets.QDialogButtonBox(MasternodeFull)
+        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Fixed, QtWidgets.QSizePolicy.Fixed)
+        sizePolicy.setHorizontalStretch(0)
+        sizePolicy.setVerticalStretch(0)
+        sizePolicy.setHeightForWidth(self.buttonBox.sizePolicy().hasHeightForWidth())
+        self.buttonBox.setSizePolicy(sizePolicy)
+        self.buttonBox.setStandardButtons(QtWidgets.QDialogButtonBox.Close)
+        self.buttonBox.setObjectName("buttonBox")
+        self.horizontalLayout.addWidget(self.buttonBox)
+        self.verticalLayout.addLayout(self.horizontalLayout)
+
+        self.retranslateUi(MasternodeFull)
+        self.tabWidget.setCurrentIndex(0)
+        QtCore.QMetaObject.connectSlotsByName(MasternodeFull)
+
+    def retranslateUi(self, MasternodeFull):
+        _translate = QtCore.QCoreApplication.translate
+        MasternodeFull.setWindowTitle(_translate("MasternodeFull", "Masternode information"))
+        self.lblMyMasternodesWarning.setText(_translate("MasternodeFull", "<html><head/><body><p>Note: The status of your masternodes here can be potentially <span style=\" font-weight:600;\">incorrect</span>.<br/>Please <span style=\" font-weight:600;\">double-check</span> from some other servers before attempting any action. You can choose another connection in GINware\'s settings.<br/>Restarting a masternode will move it to the bottom of the reward queue, so please only do it when you are sure.</p></body></html>"))
+        self.tabWidget.setTabText(self.tabWidget.indexOf(self.my_mns_tab), _translate("MasternodeFull", "My Masternodes"))
+        self.lblMasternodesFullCount.setText(_translate("MasternodeFull", "Node Count: Unknown"))
+        self.tabWidget.setTabText(self.tabWidget.indexOf(self.all_mns_tab), _translate("MasternodeFull", "All Masternodes"))
+        self.btnMasternodesFullRefresh.setText(_translate("MasternodeFull", "     Refresh     "))
+
+
+
+
+if __name__ == "__main__":
+    import sys
+    app = QtWidgets.QApplication(sys.argv)
+    MasternodeFull = QtWidgets.QDialog()
+    ui = Ui_MasternodeFull()
+    ui.setupUi(MasternodeFull)
+    MasternodeFull.show()
+    sys.exit(app.exec_())
+

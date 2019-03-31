@@ -70,14 +70,14 @@ class TransactionDlg(QDialog, Ui_TransactionDlg, WndUtils):
         self.edt_recipients.viewport().setAutoFillBackground(False)
 
         if sys.platform == 'win32':
-            self.base_font_size = '11'
-            self.title_font_size = '15'
+            self.base_font_size = '8'
+            self.title_font_size = '12'
         elif sys.platform == 'linux':
-            self.base_font_size = '11'
-            self.title_font_size = '17'
+            self.base_font_size = '8'
+            self.title_font_size = '14'
         else:  # mac
-            self.base_font_size = '13'
-            self.title_font_size = '20'
+            self.base_font_size = '10'
+            self.title_font_size = '17'
 
         self.edt_raw_transaction.setStyleSheet(f'font: {self.base_font_size}pt "Courier New";')
         doc = QTextDocument(self)
@@ -198,18 +198,21 @@ class TransactionDlg(QDialog, Ui_TransactionDlg, WndUtils):
                                     address = str(ads)
 
                             address_info = ''
+                            style = ''
                             if row_idx < len(self.tx_outputs):
                                 tx_out = self.tx_outputs[row_idx]
                                 if tx_out.address_ref:
                                     if tx_out.address_ref.is_change:
-                                        address_info = f' (the change {tx_out.address_ref.bip32_path})'
+                                        address_info = f' (change)'
+                                        style = ' style="background-color:#92cef4;"'
                                     elif tx_out.address_ref.tree_id:
                                         address_info = f' (yours)'
+                                        style = ' style="background-color:#a6dc8e;"'
 
                             if row_idx == 0:
-                                recipients = f'<tr><td class="lbl"><p class="lbl">Recipients:</p></td><td>{address} {address_info}</td><td><p class="val">{app_utils.to_string(val)} Dash</p></td><td></td></tr>'
+                                recipients = f'<tr><td class="lbl"><p class="lbl">Recipients:</p></td><td{style}>{address} {address_info}</td><td><p class="val">{app_utils.to_string(val)} GIN</p></td><td></td></tr>'
                             else:
-                                recipients += f'<tr><td></td><td>{address} {address_info}</td><td><p class="val">{app_utils.to_string(val)} Dash</p></td><td></td></tr>'
+                                recipients += f'<tr><td></td><td{style}>{address} {address_info}</td><td><p class="val">{app_utils.to_string(val)} GIN</p></td><td></td></tr>'
 
                         fee = round(inputs_total - outputs_total, 8)
 
@@ -221,33 +224,33 @@ class TransactionDlg(QDialog, Ui_TransactionDlg, WndUtils):
                                 send_tx_row = f'<tr><td class="lbl"><p class="lbl">Transaction ID:</p></td><td><a href="{url}">{self.tx_id}</a></td></tr>'
 
                         if self.transaction_sent:
-                            title = 'Transaction summary - sent'
+                            title = 'Transaction - sent'
                             subtitle = '<p style=" margin-top:0px; margin-bottom:0px; margin-left:0px; ' \
                                        'margin-right:0px; -qt-block-indent:0; text-indent:0px; ' \
                                        'background-color:#2eb82e;color:white; padding: 1px 3px 1px 3px; ' \
                                        f'border-radius: 3px;"><span style=" font-size:{self.base_font_size}pt;">' \
                                        'Transaction successfully sent...</span></p>'
                         else:
-                            title = 'Transaction summary - ready to send'
+                            title = 'Transaction - ready to send'
                             subtitle = '<p style=" margin-top:0px; margin-bottom:0px; margin-left:0px; ' \
                                        'margin-right:0px; -qt-block-indent:0; text-indent:0px;"><span style=' \
-                                       f'"font-size:{self.base_font_size}pt;">Click the <b>&lt;Send transaction&gt;</b> button to ' \
+                                       f'"font-size:{self.base_font_size}pt;">Click the <b>[Send transaction]</b> button to ' \
                                        'broadcast the transaction.</span></p>'
 
                         summary = f"""<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0//EN" "http://www.w3.org/TR/REC-html40/strict.dtd">
 <html><head><meta name="qrichtext" content="1" /><style type="text/css">
 td.lbl{{text-align: right;vertical-align: top}} p.lbl{{margin: 0 5px 0 0; font-weight: bold}} p.val{{margin: 0 0 0 8px; color: navy}}
 </style></head><body style="font-size:{self.base_font_size}pt; font-weight:400; font-style:normal; margin-left:10px;margin-right:10px;">
-<p style=" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;"><span style=" font-size:{self.title_font_size}pt; font-weight:600;">{title}</span></p>
+<p style=" margin-top:0px; margin-bottom:16px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; text-align:center;"><span style=" font-size:{self.title_font_size}pt; font-weight:600;"><br/>{title}</span></p>
 <p style="-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; font-size:{self.base_font_size}pt;"><br /></p>
 {subtitle}
 <p style=" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;">
  <table>
     {send_tx_row}
-    <tr><td class="lbl"><p class="lbl">Total amount:</p></td><td>{app_utils.to_string(inputs_total)} Dash</td><td></td></tr>
-    <tr><td class="lbl"><p class="lbl">Fee:</p></td><td>{app_utils.to_string(fee)} Dash</td><td></td></tr>
+    <tr><td class="lbl"><p class="lbl">Total amount:</p></td><td>{app_utils.to_string(inputs_total)} GIN</td><td></td></tr>
+    <tr><td class="lbl"><p class="lbl">Fee:</p></td><td>{app_utils.to_string(fee)} GIN</td><td></td></tr>
     <tr><td class="lbl"><p class="lbl">Transaction size:</p></td><td>{tx_size_str}</td><td></td></tr>
-    <tr><td class="lbl"><p class="lbl">InstantSend:</p></td><td>{'YES' if self.use_instant_send else 'NO'}</td><td></td></tr>
+    <tr><td class="lbl"><p class="lbl">InstantSend:</p></td><td style="color:{'green">Yes' if self.use_instant_send else 'red">No'}</td><td></td></tr>
     {recipients}
  </table></p></body></html>"""
 

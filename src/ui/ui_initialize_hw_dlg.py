@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 
-# Form implementation generated from reading ui file '/Users/blogin/PycharmProjects/DMT-git/src/ui/ui_initialize_hw_dlg.ui'
+# Form implementation generated from reading ui file 'ui_initialize_hw_dlg.ui'
 #
-# Created by: PyQt5 UI code generator 5.9.2
+# Created by: PyQt5 UI code generator 5.11.3
 #
 # WARNING! All changes made in this file will be lost!
 
@@ -586,8 +586,8 @@ class Ui_HwInitializeDlg(object):
         self.label_3.setText(_translate("HwInitializeDlg", "BIP32 start path:"))
         self.label.setText(_translate("HwInitializeDlg", "Passphrase:"))
         self.btnRefreshAddressesPreview.setText(_translate("HwInitializeDlg", "Apply and reload addresses"))
-        self.edtHwOptionsBip32Path.setText(_translate("HwInitializeDlg", "44\'/5\'/0\'/0/0"))
-        self.label_5.setText(_translate("HwInitializeDlg", "Dash addresses which will be available in the device after finishing the process:"))
+        self.edtHwOptionsBip32Path.setText(_translate("HwInitializeDlg", "44\'/2000\'/0\'/0/0"))
+        self.label_5.setText(_translate("HwInitializeDlg", "GINcoin addresses which will be available in the device after finishing the process:"))
         self.lblHwOptionsMessage1.setText(_translate("HwInitializeDlg", "Entropy:"))
         self.lblStepSummaryTitle.setText(_translate("HwInitializeDlg", "<h2>Operation successfully finished</h2>"))
         self.lblFirmwareSource.setText(_translate("HwInitializeDlg", "<b>Choose the source of firmware</b>"))

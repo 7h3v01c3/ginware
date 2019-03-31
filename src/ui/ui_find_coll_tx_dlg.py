@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Form implementation generated from reading ui file '/Users/blogin/PycharmProjects/DMT-git/src/ui/ui_find_coll_tx_dlg.ui'
+# Form implementation generated from reading ui file 'ui_find_coll_tx_dlg.ui'
 #
 # Created by: PyQt5 UI code generator 5.9.2
 #
@@ -11,7 +11,7 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 class Ui_ListCollateralTxsDlg(object):
     def setupUi(self, ListCollateralTxsDlg):
         ListCollateralTxsDlg.setObjectName("ListCollateralTxsDlg")
-        ListCollateralTxsDlg.resize(655, 286)
+        ListCollateralTxsDlg.resize(900, 500)
         ListCollateralTxsDlg.setModal(True)
         self.verticalLayout = QtWidgets.QVBoxLayout(ListCollateralTxsDlg)
         self.verticalLayout.setContentsMargins(8, 8, 8, 8)

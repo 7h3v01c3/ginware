@@ -69,7 +69,7 @@ class ConfigDlg(QDialog, Ui_ConfigDlg, WndUtils):
         self.resize(app_cache.get_value('ConfigDlg_Width', self.size().width(), int),
                     app_cache.get_value('ConfigDlg_Height', self.size().height(), int))
 
-        self.setWindowTitle("Configuration")
+        self.setWindowTitle("Settings")
         self.splitter.setStretchFactor(0, 0)
         self.splitter.setStretchFactor(1, 1)
         self.accepted.connect(self.on_accepted)
@@ -178,15 +178,16 @@ class ConfigDlg(QDialog, Ui_ConfigDlg, WndUtils):
         else:
             self.cboKeepkeyPassEncoding.setCurrentIndex(1)
         note_url = get_note_url('DMTN0001')
-        self.lblKeepkeyPassEncoding.setText(f'KepKey passphrase encoding (<a href="{note_url}">see</a>)')
+        self.lblKeepkeyPassEncoding.setText(f'KeepKey passphrase encoding (<a href="{note_url}">see</a>)')
 
         self.chbCheckForUpdates.setChecked(self.local_config.check_for_updates)
         self.chbBackupConfigFile.setChecked(self.local_config.backup_config_file)
-        self.chbDownloadProposalExternalData.setChecked(self.local_config.read_proposals_external_attributes)
         self.chbDontUseFileDialogs.setChecked(self.local_config.dont_use_file_dialogs)
-        self.chbConfirmWhenVoting.setChecked(self.local_config.confirm_when_voting)
-        self.chbAddRandomOffsetToVotingTime.setChecked(self.local_config.add_random_offset_to_vote_time)
         self.chbEncryptConfigFile.setChecked(self.local_config.encrypt_config_file)
+        # INFO: Disable governance for GӀN
+        # self.chbConfirmWhenVoting.setChecked(self.local_config.confirm_when_voting)
+        # self.chbAddRandomOffsetToVotingTime.setChecked(self.local_config.add_random_offset_to_vote_time)
+        # self.chbDownloadProposalExternalData.setChecked(self.local_config.read_proposals_external_attributes)
 
         idx = {
                 'CRITICAL': 0,
@@ -406,7 +407,7 @@ class ConfigDlg(QDialog, Ui_ConfigDlg, WndUtils):
             cfgs.append(self.connections_current[index.row()])
 
         if len(ids) >= 0:
-            if self.queryDlg('Do you really want to delete selected %d connection(s)?' % len(ids),
+            if self.queryDlg('Do you really want to delete the selected %d connection(s)?' % len(ids),
                              buttons=QMessageBox.Yes | QMessageBox.Cancel,
                              default_button=QMessageBox.Cancel, icon=QMessageBox.Warning) == QMessageBox.Yes:
 
@@ -700,14 +701,14 @@ class ConfigDlg(QDialog, Ui_ConfigDlg, WndUtils):
                 self.disable_cfg_update = True
                 if isinstance(dashd_conf, tuple) and len(dashd_conf) >= 3:
                     if not dashd_conf[0]:
-                        self.infoMsg('Remore Dash daemon seems to be shut down')
+                        self.infoMsg('Remote GINcoin daemon seems to be shut down')
                     elif not dashd_conf[1]:
-                        self.infoMsg('Could not find remote dashd.conf file')
+                        self.infoMsg('Could not find remote gincoin.conf file')
                     else:
                         file = dashd_conf[2]
                         rpcuser = file.get('rpcuser', '')
                         rpcpassword = file.get('rpcpassword', '')
-                        rpcport = file.get('rpcport', '9998')
+                        rpcport = file.get('rpcport', '10211')
                         modified = False
                         if rpcuser:
                             modified = modified or (self.current_network_cfg.username != rpcuser)
@@ -727,17 +728,17 @@ class ConfigDlg(QDialog, Ui_ConfigDlg, WndUtils):
                             self.is_modified = modified
 
                         if file.get('server', '1') == '0':
-                            self.warnMsg("Remote dash.conf parameter 'server' is set to '0', so RPC interface will "
+                            self.warnMsg("Remote gincoin.conf parameter 'server' is set to '0', so RPC interface will "
                                          "not work.")
                         if not rpcuser:
-                            self.warnMsg("Remote dash.conf parameter 'rpcuser' is not set, so RPC interface will  "
+                            self.warnMsg("Remote gincoin.conf parameter 'rpcuser' is not set, so RPC interface will  "
                                          "not work.")
                         if not rpcpassword:
-                            self.warnMsg("Remote dash.conf parameter 'rpcpassword' is not set, so RPC interface will  "
+                            self.warnMsg("Remote gincoin.conf parameter 'rpcpassword' is not set, so RPC interface will  "
                                          "not work.")
                     self.update_connection_details_ui()
                 elif isinstance(dashd_conf, str):
-                    self.warnMsg("Couldn't read remote dashd configuration file due the following error: " +
+                    self.warnMsg("Couldn't read remote gincoind configuration file due the following error: " +
                                  dashd_conf)
                 ssh.disconnect()
             except Exception as e:

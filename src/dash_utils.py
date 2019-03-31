@@ -35,16 +35,20 @@ class ChainParams(object):
     PREFIX_SCRIPT_ADDRESS = None
     PREFIX_SECRET_KEY = None
     BIP44_COIN_TYPE = None
+    P2P_PORT = None
+    RPC_PORT = None
 
 
 class ChainParamsMainNet(ChainParams):
-    B58_PREFIXES_PUBKEY_ADDRESS = ['X']
-    B58_PREFIXES_SCRIPT_ADDRESS = ['7']
-    B58_PREFIXES_SECRET_KEY = ['7', 'X']
-    PREFIX_PUBKEY_ADDRESS = 76
-    PREFIX_SCRIPT_ADDRESS = 16
-    PREFIX_SECRET_KEY = 204
-    BIP44_COIN_TYPE = 5
+    B58_PREFIXES_PUBKEY_ADDRESS = ['G']
+    B58_PREFIXES_SCRIPT_ADDRESS = ['5']
+    B58_PREFIXES_SECRET_KEY = ['5', 'G']
+    PREFIX_PUBKEY_ADDRESS = 38
+    PREFIX_SCRIPT_ADDRESS = 10
+    PREFIX_SECRET_KEY = 198
+    BIP44_COIN_TYPE = 2000
+    P2P_PORT = 10111
+    RPC_PORT = 10211
 
 
 class ChainParamsTestNet(ChainParams):
@@ -55,6 +59,8 @@ class ChainParamsTestNet(ChainParams):
     PREFIX_SCRIPT_ADDRESS = 19
     PREFIX_SECRET_KEY = 239
     BIP44_COIN_TYPE = 1
+    P2P_PORT = 12111
+    RPC_PORT = 12211
 
 
 def get_chain_params(dash_network: str) -> typing.ClassVar[ChainParams]:

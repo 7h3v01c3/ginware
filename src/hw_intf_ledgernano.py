@@ -1,4 +1,4 @@
-import logging
+import logging, math
 
 from bitcoin import compress, bin_hash160
 from btchip.btchip import *
@@ -16,6 +16,13 @@ from PyQt5.QtWidgets import QMessageBox
 import unicodedata
 from bip32utils import Base58
 
+from ledgerblue.ecWrapper import PrivateKey
+from ledgerblue.comm import CommException, getDongle as getDongleComm
+from ledgerblue.hexParser import IntelHexParser, IntelHexPrinter
+from ledgerblue.hexLoader import *
+from ledgerblue.deployed import getDeployedSecretV2
+import struct, binascii, sys, os, hashlib
+import hw_binaries
 
 class btchip_dmt(btchip):
     def __init__(self, dongle):
@@ -117,9 +124,11 @@ def process_ledger_exceptions(func):
         except BTChipException as e:
             logging.exception('Error while communicating with Ledger hardware wallet.')
             if (e.sw in (0x6d00, 0x6700)):
-                e.message += '\n\nMake sure the Dash app is running on your Ledger device.'
+                e.message += '\n\nPlease make sure that the GINcoin app is running on your Ledger device.'
             elif (e.sw == 0x6982):
-                e.message += '\n\nMake sure you have entered the PIN on your Ledger device.'
+                e.message += '\n\nPlease make sure that you\'ve entered the PIN on your Ledger device.'
+            elif (e.sw == 0x6985):
+                e.message += '\n\nThe command was cancelled.\n\nNOTE: If you were trying to verify an address, and the address on-screen did not match the address on your Ledger device screen, please return to GINware\'s main section and try [Tools > Clear Wallet Cache].'
             raise
     return process_ledger_exceptions_int
 
@@ -130,7 +139,7 @@ def connect_ledgernano():
     app = btchip(dongle)
     try:
         ver = app.getFirmwareVersion()
-        logging.info('Ledger Nano S connected. Firmware version: %s, specialVersion: %s, compressedKeys: %s' %
+        logging.info('Ledger Nano S connected. App version: %s, specialVersion: %s, compressedKeys: %s' %
                      (str(ver.get('version')), str(ver.get('specialVersion')), ver.get('compressedKeys')))
 
         client = btchip_dmt(dongle)
@@ -340,7 +349,7 @@ def load_device_by_mnemonic(mnemonic_words: str, pin: str, passphrase: str, seco
 
 @process_ledger_exceptions
 def sign_tx(hw_session: HwSessionInfo, utxos_to_spend: List[wallet_common.UtxoType],
-            tx_outputs: List[wallet_common.TxOutputType], tx_fee):
+            tx_outputs: List[wallet_common.TxOutputType], tx_fee, ctrl):
     client = hw_session.hw_client
     rawtransactions = {}
     decodedtransactions = {}
@@ -385,9 +394,19 @@ def sign_tx(hw_session: HwSessionInfo, utxos_to_spend: List[wallet_common.UtxoTy
 
     amount = 0
     starting = True
+    avg_time_per = 0.0
+    rem_time = 0.0
+    rem_time_str = ""
     for idx, utxo in enumerate(utxos_to_spend):
-        amount += utxo.satoshis
+        # Estimate remaining time, to show user
+        curr_time = time.time()
+        if avg_time_per > 0 and idx >= 3:
+            rem_time = avg_time_per * (len(utxos_to_spend) - idx)
+            if rem_time > 60: rem_time_str = f"({math.floor(rem_time / 60)}m {math.floor(rem_time % 60)}s)"
+            else:             rem_time_str = f"({math.floor(rem_time)}s)"
+        ctrl.display_msg_fun(f"<b>Preparing input {idx+1} of {len(utxos_to_spend)}<br>Please wait... {rem_time_str}</b>")
 
+        amount += utxo.satoshis
         raw_tx = rawtransactions.get(utxo.txid)
         if not raw_tx:
             raise Exception("Can't find raw transaction for txid: " + utxo.txid)
@@ -446,6 +465,9 @@ def sign_tx(hw_session: HwSessionInfo, utxos_to_spend: List[wallet_common.UtxoTy
             'outputIndex': utxo.output_index,
             'txid': utxo.txid
         })
+        # Average for time per action
+        if avg_time_per == 0: avg_time_per = time.time() - curr_time
+        else:                 avg_time_per = (time.time() - curr_time + (avg_time_per * idx)) / (idx + 1)
 
     amount -= int(tx_fee)
     amount = int(amount)
@@ -461,11 +483,22 @@ def sign_tx(hw_session: HwSessionInfo, utxos_to_spend: List[wallet_common.UtxoTy
     # join all outputs - will be used by Ledger for sigining transaction
     all_outputs_raw = new_transaction.serializeOutputs()
 
+    ctrl.display_msg_fun("<b>Please verify then confirm the transaction<br>on your hardware wallet.</b>")
+
+    avg_time_per = 0.0
+    rem_time = 0.0
+    rem_time_str = ""
     # sign all inputs on Ledger and add inputs in the new_transaction object for serialization
     for idx, new_input in enumerate(arg_inputs):
-
+        # Estimate remaining time, to show user
+        curr_time = time.time()
+        if avg_time_per > 0 and idx >= 3:
+            rem_time = avg_time_per * (len(arg_inputs) - idx)
+            if rem_time > 60: rem_time_str = f"({math.floor(rem_time / 60)}m {math.floor(rem_time % 60)}s)"
+            else:             rem_time_str = f"({math.floor(rem_time)}s)"
         client.startUntrustedTransaction(starting, idx, trusted_inputs, new_input['locking_script'])
         client.finalizeInputFull(all_outputs_raw)
+        ctrl.display_msg_fun(f"<b>Signing input {idx+1} of {len(arg_inputs)}<br>Please wait... {rem_time_str}</b>")
         sig = client.untrustedHashSign(new_input['bip32_path'], lockTime=0)
         new_input['signature'] = sig
 
@@ -478,7 +511,216 @@ def sign_tx(hw_session: HwSessionInfo, utxos_to_spend: List[wallet_common.UtxoTy
 
         starting = False
 
+        # Average for time per action
+        if avg_time_per == 0: avg_time_per = (time.time() - curr_time) * 3 / 4
+        else:                 avg_time_per = (time.time() - curr_time + (avg_time_per * (idx-1))) / idx
+
     new_transaction.lockTime = bytearray([0, 0, 0, 0])
 
     tx_raw = bytearray(new_transaction.serialize())
     return tx_raw, amount
+
+"""
+*******************************************************************************
+*   Ledger Blue
+*   (c) 2016 Ledger
+*
+*  Licensed under the Apache License, Version 2.0 (the "License");
+*  you may not use this file except in compliance with the License.
+*  You may obtain a copy of the License at
+*
+*      http://www.apache.org/licenses/LICENSE-2.0
+*
+*  Unless required by applicable law or agreed to in writing, software
+*  distributed under the License is distributed on an "AS IS" BASIS,
+*  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+*  See the License for the specific language governing permissions and
+*  limitations under the License.
+********************************************************************************
+****************** Implementations below were adopted from ledgerblue by zakurai
+"""
+
+class Installer:
+    def __init__(self, ctrl, testnet=False):
+        if not testnet:
+            self.name = "GINcoin"
+            self.net = "mainnet"
+            self.path = "44\'/2000\'"
+        else:
+            self.name = "GINcoin Testnet"
+            self.net = "testnet"
+            self.path = "44\'/1\'"
+        self.targetId = 0x31100004
+        self.msg = ctrl.display_msg_fun
+        self.pk = PrivateKey().serialize()
+        self.dongle = None
+        self.loader = None
+        self.open = False
+
+    def install(self) -> int:
+        import simplejson, ssl, urllib.request
+        from pathlib import PurePath
+        if getattr(sys, "frozen", False):
+            app_dir = PurePath(sys._MEIPASS)
+        else:
+            app_dir = PurePath(__file__).parents[1]
+        args = {
+            "appName": bytes(self.name, "ascii"),
+            "dataSize": 0,
+            "icon": bytearray.fromhex("0100000000ffffff00ffffffffffffffff1ff8dffbdffbdffbdffb1ff8fffb1ff8ffffffffffffffff"),
+            "targetVersion": None
+        }
+        bins = hw_binaries.binaries
+        if not bins["hwBinaries"]: return 4
+        try:
+            self.msg(f"<b>- Step #1/4 -</b><br>Please <b>allow</b> the <b>unknown manager</b> on your hardware wallet.")
+            self.getLoader(f"<b>- Step #2/4 -</b><br>Auto-detecting parameters and preparing install.<br>   Please wait...")
+            preApps = self.listall()
+            hvDict = bins["hwBinaries"]["nanos"]
+            hexVer = appVer = None
+            for app in preApps:
+                if (self.name == app["name"]):
+                    return 0x6a81
+                if ("Bitcoin" == app["name"]):
+                    for hv in hvDict.keys():
+                        for av in hvDict[hv]["base"].keys():
+                            if hvDict[hv]["base"][av] == app["hash_code_data"]:
+                                hexVer = hv
+                                appVer = av
+                    if not hexVer: return 3
+            if not hexVer: return 0x6a83
+            args["appVersion"] = appVer
+            args["dep"] = "Bitcoin:" + appVer
+            args["fileName"] = app_dir / "hardware-wallets" / "apps" / f"s{hexVer}{self.net[0]}.hex"
+            outHash = chash(args["fileName"])
+            if outHash != hvDict[hexVer][self.net]:
+                logging.error("Invalid chash: " + outHash)
+                return 5
+
+            parser = IntelHexParser(args["fileName"])
+            args["bootAddr"] = parser.getBootAddr()
+            path = struct.pack(">B", 1) + parse_bip32_path_i(self.path)
+            printer = IntelHexPrinter(parser)
+
+            (appname,appversion) = args["dep"].split(":")
+            depvalue = encodelv(string_to_bytes(appname)) + encodelv(string_to_bytes(appversion))
+            installparams = b""
+            installparams += encodetlv(BOLOS_TAG_DEPENDENCY, depvalue)
+            installparams += encodetlv(BOLOS_TAG_APPNAME, args["appName"])
+            installparams += encodetlv(BOLOS_TAG_APPVERSION, string_to_bytes(args["appVersion"]))
+            installparams += encodetlv(BOLOS_TAG_ICON, bytes(args["icon"]))
+            installparams += encodetlv(BOLOS_TAG_DERIVEPATH, path)
+
+            code_length = printer.maxAddr() - printer.minAddr()
+            param_start = printer.maxAddr() + (64 - (args["dataSize"] % 64)) % 64
+            printer.addArea(param_start, installparams)
+            paramsSize = len(installparams)
+
+            if args["bootAddr"] > printer.minAddr():
+                args["bootAddr"] -= printer.minAddr()
+            self.loader.createApp(code_length, args["dataSize"], paramsSize, 0, args["bootAddr"] | 1)
+            self.loader.load(0x0, 0xF0, printer, targetId=self.targetId, targetVersion=args["targetVersion"])
+
+            ch = hvDict[hexVer][self.net].upper()
+            th = hvDict[hexVer][self.net[0] + "-ident"][av].upper()
+            link = "https://github.com/GIN-coin/ginware/releases/latest"
+            self.msg(f"<b>- Step #3/4 -</b><br>"
+                        "Check the following values and make sure they match on your hardware wallet screen:" + "<br><br>"
+                        f"Code Identifier:<br><b>{ch[0:4]}...{ch[60:64]}</b>" + "<br><br>"
+                        f"Identifier:<br><b>{th[0:4]}...{th[60:64]}</b>" + "<br><br>"
+                        f"<em>Your device will ask you to enter your PIN to finish the installation.</em>"
+                        "<br><br>-----------------------------------------------------------------------<br><br>"
+                        "Advanced users: you can double-check the above identifiers" + "<br>"
+                        f"with <b>verify_ledger.txt.asc</b> provided on the <a href=\"{link}\">GitHub releases page</a>" + "<br><br>"
+                        f"Hex version: <b>s{hexVer}{self.net[0]}</b>" + "<br>"
+                        f"App version: <b>{appVer}</b>")
+            self.loader.commit()
+            self.close()
+            self.msg(f"<b>- Step #4/4 -</b><br>   Verifying installation...")
+            postApps = self.listall()
+            self.close()
+            for app in postApps:
+                if ((self.name == app["name"]) and hvDict[hexVer][self.net] == app["hash_code_data"]):
+                    return 0
+            return 2
+        except (BTChipException, CommException) as e:
+            self.close()
+            return e.sw
+        except Exception as e:
+            self.close()
+            logging.error(e)
+            return 1
+
+    def uninstall(self) -> int:
+        args = {
+            "appName": bytes(self.name, "ascii")
+        }
+        try:
+            self.msg(f"<b>- Step #1/2 -</b><br>Please <b>allow</b> the <b>unknown manager</b> on your hardware wallet.")
+            if not self.open: self.getLoader()
+            self.msg(f"<b>- Step #2/2 -</b><br>Please check your hardware wallet and approve the removal.")
+            self.loader.deleteApp(args["appName"])
+            self.close()
+            return 0
+        except (BTChipException, CommException) as e:
+            self.close()
+            return e.sw
+
+    def listall(self):
+        try:
+            if not self.open: self.getLoader()
+            apps = []
+            restart = True
+            while True:
+                buf = self.loader.listApp(restart)
+                if len(buf) == 0: break
+                restart = False
+                for a in buf:
+                    a["hash"] = a["hash"].hex()
+                    a["hash_code_data"] = a["hash_code_data"].hex()
+                    apps.append(a)
+            return apps
+        except (BTChipException, CommException):
+            self.close()
+            raise
+
+    def getLoader(self, postMsg=None):
+        try:
+            self.dongle = getDongleComm()
+            self.open = True
+            secret = getDeployedSecretV2(self.dongle, bytearray.fromhex(self.pk), self.targetId)
+            if postMsg: self.msg(postMsg)
+            self.loader = HexLoader(self.dongle, 0xe0, True, secret)
+            return True
+        except Exception:
+            self.close()
+            raise
+
+    def close(self):
+        self.open = False
+        self.dongle.close()
+
+def chash(fileName) -> str:
+    if fileName == None:
+        raise Exception("Missing fileName!")
+    parser = IntelHexParser(fileName)
+    h = hashlib.sha256()
+    for a in parser.getAreas():
+        h.update(a.data)
+    result = h.digest()
+    return binascii.hexlify(result).decode()
+
+def parse_bip32_path_i(path):
+        import struct
+        if len(path) == 0:
+                return b""
+        result = b""
+        elements = path.split("/")
+        result = result + struct.pack(">B", len(elements))
+        for pathElement in elements:
+                element = pathElement.split("\'")
+                if len(element) == 1:
+                        result = result + struct.pack(">I", int(element[0]))
+                else:
+                        result = result + struct.pack(">I", 0x80000000 | int(element[0]))
+        return result

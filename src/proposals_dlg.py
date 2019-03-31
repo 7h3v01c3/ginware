@@ -751,14 +751,14 @@ class ProposalsDlg(QDialog, ui_proposals.Ui_ProposalsDlg, wnd_utils.WndUtils):
 
         budget_approved = ''
         if self.next_budget_approved is not None:
-            budget_approved = f'<td><b>Budget approved:</b> {app_utils.to_string(round(self.next_budget_approved))} Dash '
+            budget_approved = f'<td><b>Budget approved:</b> {app_utils.to_string(round(self.next_budget_approved))} GIN '
             if self.next_budget_approved_pct is not None:
                 budget_approved += f'({app_utils.to_string(round(self.next_budget_approved_pct, 2))}%)'
             budget_approved += '</td>'
 
         budget_requested = ''
         if self.next_budget_requested is not None:
-            budget_requested = f'<td><b>Budget requested:</b> {app_utils.to_string(round(self.next_budget_requested))} Dash '
+            budget_requested = f'<td><b>Budget requested:</b> {app_utils.to_string(round(self.next_budget_requested))} GIN '
             if self.next_budget_requested_pct is not None:
                 budget_requested += f'({app_utils.to_string(round(self.next_budget_requested_pct, 2))}%)'
             budget_requested += '</td>'
@@ -771,7 +771,7 @@ class ProposalsDlg(QDialog, ui_proposals.Ui_ProposalsDlg, wnd_utils.WndUtils):
             if self.next_budget_approved_by_user_yes_votes is not None:
                 budget_approved_user_yes = \
                     f'<tr><td colspan="2"><b>Budget approved by your YES votes:</b> ' \
-                    f'{app_utils.to_string(round(self.next_budget_approved_by_user_yes_votes))} Dash '
+                    f'{app_utils.to_string(round(self.next_budget_approved_by_user_yes_votes))} GIN '
                 if self.next_budget_amount:
                     budget_approved_user_yes += \
                         f'({app_utils.to_string(round(self.next_budget_approved_by_user_yes_votes * 100 / self.next_budget_amount, 2))}% of the available buget'
@@ -784,8 +784,8 @@ class ProposalsDlg(QDialog, ui_proposals.Ui_ProposalsDlg, wnd_utils.WndUtils):
                   f'<table style="margin-left:6px">' \
                   f'<tr><td><b>Next superblock date:</b> {app_utils.to_string(next_sb_dt)}</td>' \
                   f'<td><b>Voting deadline:</b> {app_utils.to_string(voting_deadline_dt)}{dl_add_info}</td></tr>' \
-                  f'{bra}<tr><td><b>Budget available:</b> {app_utils.to_string(round(self.next_budget_amount))} Dash</td>' \
-                  f'<td><b>Budget left:</b> {app_utils.to_string(round(self.next_budget_left))} Dash</td></tr>' \
+                  f'{bra}<tr><td><b>Budget available:</b> {app_utils.to_string(round(self.next_budget_amount))} GIN</td>' \
+                  f'<td><b>Budget left:</b> {app_utils.to_string(round(self.next_budget_left))} GIN</td></tr>' \
                   f'{budget_approved_user_yes}</table></body></html>'
 
         if not self.finishing:
@@ -824,7 +824,7 @@ class ProposalsDlg(QDialog, ui_proposals.Ui_ProposalsDlg, wnd_utils.WndUtils):
         try:
 
             self.display_message('Reading proposals data, please wait...')
-            log.info('Reading proposals from the Dash network.')
+            log.info('Reading proposals from the GINcoin network.')
             begin_time = time.time()
             proposals_new = self.dashd_intf.gobject("list", "valid", "proposals")
             log.info('Read proposals from network (gobject list). Count: %s, operation time: %s' %
@@ -1035,16 +1035,16 @@ class ProposalsDlg(QDialog, ui_proposals.Ui_ProposalsDlg, wnd_utils.WndUtils):
             else:
                 # no proposals read from network - skip deactivating records because probably
                 # some network glitch occured
-                log.warning('No proposals returned from dashd.')
+                log.warning('No proposals returned from gincoind.')
             log.info('Finished reading proposals data from network.')
 
         except CloseDialogException:
             log.info('Closing the dialog.')
 
         except Exception as e:
-            log.exception('Exception wile reading proposals from Dash network.')
+            log.exception('Exception wile reading proposals from GINcoin network.')
             self.display_message('')
-            self.errorMsg('Error while reading proposals data from the Dash network: ' + str(e))
+            self.errorMsg('Error while reading proposals data from the GINcoin network: ' + str(e))
             raise
 
     def get_governance_info(self):
@@ -1088,7 +1088,7 @@ class ProposalsDlg(QDialog, ui_proposals.Ui_ProposalsDlg, wnd_utils.WndUtils):
 
         except Exception as e:
             log.exception('Exception while reading governance info.')
-            self.errorMsg("Coundn't read governanceinfo from the Dash network. "
+            self.errorMsg("Coundn't read governanceinfo from the GINcoin network. "
                       "Some features may not work correctly because of this. Details: " + str(e))
 
     def refresh_filter(self):
@@ -1102,9 +1102,9 @@ class ProposalsDlg(QDialog, ui_proposals.Ui_ProposalsDlg, wnd_utils.WndUtils):
         old_reading_state = self.reading_vote_data
         self.reading_vote_data = True
         try:
-            self.display_message('Connecting to Dash daemon, please wait...')
+            self.display_message('Connecting to GINcoin daemon, please wait...')
             if not self.dashd_intf.open():
-                self.errorMsg('Dash daemon not connected')
+                self.errorMsg('GINcoin daemon not connected')
             else:
                 try:
                     self.read_governance_data()
@@ -1416,8 +1416,7 @@ class ProposalsDlg(QDialog, ui_proposals.Ui_ProposalsDlg, wnd_utils.WndUtils):
                         self.db_intf.release_cursor()
 
                     if exceptions_occurred:
-                        self.errorMsg('Error(s) occurred while retrieving proposals external data from '
-                                      'DashCentral.org.')
+                        self.errorMsg('Error(s) occurred while retrieving proposals external data.')
 
         except CloseDialogException:
             log.info('Closing the dialog.')
@@ -1506,7 +1505,7 @@ class ProposalsDlg(QDialog, ui_proposals.Ui_ProposalsDlg, wnd_utils.WndUtils):
                 # that has been added (will be saved to the database cache)
 
                 if not self.dashd_intf.open():
-                    self.errorMsg('Dash daemon not connected')
+                    self.errorMsg('GINcoin daemon not connected')
                 else:
                     try:
                         proposals_updated = []  # list of proposals for which votes were loaded
@@ -1957,7 +1956,7 @@ class ProposalsDlg(QDialog, ui_proposals.Ui_ProposalsDlg, wnd_utils.WndUtils):
         </tr>
         <tr class="main-row">
             <td class="first-col-label">Payment:</td>
-            <td class="padding" style="white-space:nowrap"><span>{app_utils.to_string(prop.get_value('payment_amount'))} Dash&#47;cycle ({cycles_str}, {app_utils.to_string(prop.get_value('payment_amount_total'))} Dash total)
+            <td class="padding" style="white-space:nowrap"><span>{app_utils.to_string(prop.get_value('payment_amount'))} GIN&#47;cycle ({cycles_str}, {app_utils.to_string(prop.get_value('payment_amount_total'))} GIN total)
                 <br/><span class="inter-label">start - end:</span>&nbsp;&nbsp;{get_date_str(prop.get_value('payment_start'))} - {get_date_str(prop.get_value('payment_end'))}</span>
                 <br/><span class="inter-label">address:</span>&nbsp;&nbsp;{payment_addr}
             </td>
@@ -2023,11 +2022,11 @@ class ProposalsDlg(QDialog, ui_proposals.Ui_ProposalsDlg, wnd_utils.WndUtils):
         </tr>
         <tr class="main-row">
             <td class="first-col-label">Requested from the next budget:</td>
-            <td class="padding">{app_utils.to_string(total_amount_requested)} Dash{total_pct_requested}</td>
+            <td class="padding">{app_utils.to_string(total_amount_requested)} GIN{total_pct_requested}</td>
         </tr>
         <tr class="main-row">
             <td class="first-col-label">Approved from the next budget:</td>
-            <td class="padding">{app_utils.to_string(total_amount_approved)} Dash{total_pct_approved}</td>
+            <td class="padding">{app_utils.to_string(total_amount_approved)} GIN{total_pct_approved}</td>
         </tr>
     </tbody>
 </table>
@@ -2638,7 +2637,7 @@ class ProposalsDlg(QDialog, ui_proposals.Ui_ProposalsDlg, wnd_utils.WndUtils):
             self.errorMsg('Wait for the previus votes processing finishes.')
 
         if not self.dashd_intf.open():
-            self.errorMsg('Dash daemon not connected')
+            self.errorMsg('GINcoin daemon not connected')
         else:
             props = self.get_selected_proposals(active_voting_only=True)
             vote_str = {VOTE_CODE_YES: 'YES', VOTE_CODE_NO: 'NO', VOTE_CODE_ABSTAIN: 'ABSTAIN'}[vote_code]

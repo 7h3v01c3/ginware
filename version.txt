@@ -1,1 +1,2 @@
-version_str = '0.9.22-hotfix5'
+version_str = '1.0.1-0'
+dmtbase_str = '0.9.22-hotfix5'

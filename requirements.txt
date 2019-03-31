@@ -8,9 +8,10 @@ pyinstaller>=3.3
 paramiko>=2.2.1
 requests>=2.18.4
 mnemonic>=0.18
-simplejson
+simplejson==3.16.0
 cryptography
-bip32utils
+bip32utils==0.3.post4
 more-itertools
--e git+https://github.com/Bertrand256/btchip-python#egg=btchip-python
-python-bls
+-e git+https://github.com/zakurai/btchip-python#egg=btchip-python
+python-bls==0.1.4
+ledgerblue>=0.1.23

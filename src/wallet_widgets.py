@@ -162,7 +162,7 @@ class SendFundsDestinationItem(QObject):
                 self.lbl_second_unit_value.setText('')
         elif self.values_unit == OUTPUT_VALUE_UNIT_PERCENT:
             if self.value_amount is not None:
-                self.lbl_second_unit_value.setText(app_utils.to_string(round(self.value_amount, 8)) + ' Dash')
+                self.lbl_second_unit_value.setText(app_utils.to_string(round(self.value_amount, 8)) + ' GIN')
             else:
                 self.lbl_second_unit_value.setText('')
 
@@ -346,6 +346,14 @@ class SendFundsDestination(QtWidgets.QWidget, WndUtils):
         self.lay_actions.addWidget(self.cbo_output_unit)
         self.lay_actions.addStretch(0)
 
+        # change
+        self.lbl_change_label = QLabel(Form)
+        self.lbl_change_value = QLabel(Form)
+        self.lbl_change_label.setText('Change (returned to you):')
+        self.lbl_change_value.setText('')
+        self.lay_actions.addWidget(self.lbl_change_label)
+        self.lay_actions.addWidget(self.lbl_change_value)
+
         # scroll area for send to (destination) addresses
         self.scroll_area = QtWidgets.QScrollArea()
         self.scroll_area.setWidgetResizable(True)
@@ -370,7 +378,7 @@ class SendFundsDestination(QtWidgets.QWidget, WndUtils):
 
         # the last row of the grid layout is dedicated to 'fee' controls
         self.lbl_fee = QLabel(self.scroll_area_widget)
-        self.lbl_fee.setText('Fee [Dash]')
+        self.lbl_fee.setText('Fee [GIN]')
         self.lbl_fee.setAlignment(QtCore.Qt.AlignRight|QtCore.Qt.AlignTrailing|QtCore.Qt.AlignVCenter)
         self.lay_addresses.addWidget(self.lbl_fee, 1, 0)
 
@@ -389,12 +397,6 @@ class SendFundsDestination(QtWidgets.QWidget, WndUtils):
         self.btn_get_default_fee.setToolTip('Use default fee')
         self.btn_get_default_fee.clicked.connect(self.on_btn_get_default_fee_clicked)
         self.lay_fee_value.addWidget(self.btn_get_default_fee)
-        self.lbl_change_label = QLabel(self.scroll_area_widget)
-        self.lbl_change_label.setText('  The change: ')
-        self.lay_fee_value.addWidget(self.lbl_change_label)
-        self.lbl_change_value = QLabel(self.scroll_area_widget)
-        self.lbl_change_value.setText('')
-        self.lay_fee_value.addWidget(self.lbl_change_value)
         self.lay_fee_value.addStretch(0)
 
         # instant send
@@ -690,7 +692,7 @@ class SendFundsDestination(QtWidgets.QWidget, WndUtils):
             self.lbl_change_label.setVisible(True)
             self.lbl_change_value.setVisible(True)
             val_str = app_utils.to_string(round(self.change_amount, 8))
-            self.lbl_change_value.setText(val_str)
+            self.lbl_change_value.setText(val_str + ' GIN')
 
     def read_fee_value_from_ui(self):
         text = self.edt_fee_value.text()
@@ -829,11 +831,16 @@ class SendFundsDestination(QtWidgets.QWidget, WndUtils):
     def display_totals(self):
         recipients = self.get_number_of_recipients()
         bytes = (self.inputs_count * 148) + (recipients * 34) + 10
-        text = f'<span class="label"><b>Total value of the selected inputs:</b>&nbsp;</span><span class="value">&nbsp;{self.inputs_total_amount} Dash&nbsp;</span>'
+        if bytes >= 1024:
+            bytes = round(bytes / 1024, 2)
+            bunit = 'kB'
+        else:
+            bunit = 'B'
+        text = f'<span class="label"><b>Total value of the selected inputs:</b>&nbsp;</span><span class="value">&nbsp;{self.inputs_total_amount} GIN&nbsp;</span>'
         if self.inputs_total_amount > 0:
             text += f'<span class="label">&nbsp;<b>Inputs:</b>&nbsp;</span><span class="value">&nbsp;{self.inputs_count}&nbsp;</span>' \
                     f'<span class="label">&nbsp;<b>Outputs:</b>&nbsp;</span><span class="value">&nbsp;{recipients}&nbsp;</span>' \
-                    f'<span class="label">&nbsp;<b>Transaction size:</b>&nbsp;</span><span class="value">&nbsp;{bytes} B&nbsp;</span>'
+                    f'<span class="label">&nbsp;<b>Transaction size:</b>&nbsp;</span><span class="value">&nbsp;{bytes} {bunit}&nbsp;</span>'
         self.lbl_totals.setText(text)
 
         if self.current_file_name:
@@ -1040,7 +1047,7 @@ class SendFundsDestination(QtWidgets.QWidget, WndUtils):
     def get_tx_destination_data(self) -> List[TxOutputType]:
         if self.validate_output_data():
             if self.change_amount < 0.0:
-                raise Exception('Not enough funds!!!')
+                raise Exception('ERROR: Not enough coins selected.\n\nThe amount you want to send is larger than the input total.')
 
             dest_data = []
             for addr in self.recipients:
@@ -1126,7 +1133,7 @@ class WalletMnItemDelegate(QItemDelegate):
 
             r.setTop(r.top() + fm.height() + WalletMnItemDelegate.CellLinesMargin)
             if mn.address.balance is not None:
-                balance_str = 'Balance: ' + app_utils.to_string(mn.address.balance / 1e8) + ' Dash'
+                balance_str = 'Balance: ' + app_utils.to_string(mn.address.balance / 1e8) + ' GIN'
             else:
                 balance_str = 'Balance: unknown'
             painter.drawText(r, Qt.AlignLeft, balance_str)
@@ -1196,7 +1203,7 @@ class WalletAccountItemDelegate(QItemDelegate):
 
                 r.setTop(r.top() + fm.height() + WalletMnItemDelegate.CellLinesMargin)
                 if data.balance is not None:
-                    balance_str = 'Balance: ' + app_utils.to_string(data.balance / 1e8) + ' Dash'
+                    balance_str = 'Balance: ' + app_utils.to_string(data.balance / 1e8) + ' GIN'
                 else:
                     balance_str = 'Balance: unknown'
                 painter.drawText(r, Qt.AlignLeft, balance_str)

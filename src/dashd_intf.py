@@ -288,9 +288,9 @@ class DashdSSH(object):
         try:
             # find dashd process id if running
             try:
-                pids = self.remote_command('ps -C "dashd" -o pid')
+                pids = self.remote_command('ps -C "gincoind" -o pid')
             except UnknownError:
-                raise Exception('is dashd running on the remote machine?')
+                raise Exception('is gincoind running on the remote machine?')
             pid = None
             if isinstance(pids, list):
                 pids = [pid.strip() for pid in pids]
@@ -308,7 +308,7 @@ class DashdSSH(object):
                     if len(elems) == 2:
                         executable = elems[1].strip()
                         dashd_dir = os.path.dirname(executable)
-                        dash_conf_file = dashd_dir + '/.dashcore/dash.conf'
+                        dash_conf_file = dashd_dir + '/.gincoincore/gincoin.conf'
                         conf_lines = []
                         try:
                             conf_lines = self.remote_command('cat ' + dash_conf_file)
@@ -320,13 +320,13 @@ class DashdSSH(object):
                                 elems = cwd_lines[0].split('->')
                                 if len(elems) >= 2:
                                     cwd = elems[1]
-                                    dash_conf_file = cwd + '/.dashcore/dash.conf'
+                                    dash_conf_file = cwd + '/.gincoincore/gincoin.conf'
                                     try:
                                         conf_lines = self.remote_command('cat ' + dash_conf_file)
                                     except Exception as e:
                                         # second method did not suceed, so assume, that conf file is located
                                         # i /home/<username>/.dashcore directory
-                                        dash_conf_file = '/home/' + self.username + '/.dashcore/dash.conf'
+                                        dash_conf_file = '/home/' + self.username + '/.gincoincore/gincoin.conf'
                                         conf_lines = self.remote_command('cat ' + dash_conf_file)
 
                         for line in conf_lines:
@@ -355,13 +355,13 @@ class DashdIndexException(JSONRPCException):
     def __init__(self, parent_exception):
         JSONRPCException.__init__(self, parent_exception.error)
         self.message = self.message + \
-                       '\n\nMake sure the dash daemon you are connecting to has the following options enabled in ' \
-                       'its dash.conf:\n\n' + \
+                       '\n\nMake sure the GINcoin daemon you are connecting to has the following options enabled in ' \
+                       'its gincoin.conf:\n\n' + \
                        'addressindex=1\n' + \
                        'spentindex=1\n' + \
                        'timestampindex=1\n' + \
                        'txindex=1\n\n' + \
-                       'Changing these parameters requires to execute dashd with "-reindex" option (linux: ./dashd -reindex)'
+                       'Changing these parameters requires executing gincoind with the "-reindex" flag (linux: ./gincoind -reindex)'
 
 
 def control_rpc_call(func):
@@ -710,7 +710,7 @@ class DashdInterface(WndUtils):
         """
         try:
             if not self.cur_conn_def:
-                raise Exception('There is no connections to Dash network enabled in the configuration.')
+                raise Exception('There is no connections to the GINcoin network enabled in the configuration.')
 
             while True:
                 try:
@@ -879,10 +879,10 @@ class DashdInterface(WndUtils):
             if verify_node:
                 node_under_testnet = info.get('testnet')
                 if self.config.is_testnet() and not node_under_testnet:
-                    raise Exception('This RPC node works under Dash MAINNET, but your current configuration is '
+                    raise Exception('This RPC node works under GINcoin MAINNET, but your current configuration is '
                                     'for TESTNET.')
                 elif self.config.is_mainnet() and node_under_testnet:
-                    raise Exception('This RPC node works under Dash TESTNET, but your current configuration is '
+                    raise Exception('This RPC node works under GINcoin TESTNET, but your current configuration is '
                                     'for MAINNET.')
             return info
         else:
@@ -899,6 +899,18 @@ class DashdInterface(WndUtils):
                 return syn.get('IsSynced')
         else:
             raise Exception('Not connected')
+
+    @control_rpc_call
+    def isconnected(self):
+        if self.open():
+            if self.cur_conn_def.is_http_proxy():
+                return True
+            else:
+                conns = self.proxy.getconnectioncount()
+                return conns > 0
+        else:
+            raise Exception('Not connected')
+
 
     @control_rpc_call
     def mnsync(self):
@@ -1027,7 +1039,7 @@ class DashdInterface(WndUtils):
                     log.info('Using cached masternodelist (data age: %s)' % str(int(time.time()) - last_read_time))
                     return self.masternodes
                 else:
-                    log.info('Loading masternode list from Dash daemon...')
+                    log.info('Loading masternode list from GINcoin daemon...')
                     mns = self.proxy.masternodelist(*args)
                     mns = parse_mns(mns)
                     log.info('Finished loading masternode list')

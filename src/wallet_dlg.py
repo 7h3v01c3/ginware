@@ -266,7 +266,7 @@ class WalletDlg(QDialog, ui_wallet_dlg.Ui_WalletDlg, WndUtils):
 
         # context menu actions:
         # show address on hardware wallet
-        self.act_show_address_on_hw = QAction('Show address', self)
+        self.act_show_address_on_hw = QAction('Check address on device', self)
         self.act_show_address_on_hw.triggered.connect(self.on_show_address_on_hw_triggered)
         self.main_ui.setIcon(self.act_show_address_on_hw, 'eye@16px.png')
         self.accountsListView.addAction(self.act_show_address_on_hw)
@@ -509,6 +509,7 @@ class WalletDlg(QDialog, ui_wallet_dlg.Ui_WalletDlg, WndUtils):
 
     @pyqtSlot(bool)
     def chbHideCollateralTxToggled(self, checked):
+        self.chbHideCollateralTx.setStyleSheet("" if checked else "color:red")
         self.utxo_table_model.set_hide_collateral_utxos(checked)
 
     @pyqtSlot(bool)
@@ -561,39 +562,42 @@ class WalletDlg(QDialog, ui_wallet_dlg.Ui_WalletDlg, WndUtils):
             #  - the utxo Dash (signing) address matches the hardware wallet address for a given path
             for utxo_idx, utxo in enumerate(tx_inputs):
                 total_satoshis_inputs += utxo.satoshis
-                log.info(f'UTXO satosis: {utxo.satoshis}')
+                log.info(f'UTXO satoshis: {utxo.satoshis}')
                 if utxo.is_collateral:
                     if self.queryDlg(
-                            "Warning: you are going to transfer masternode's collateral (1000 Dash) transaction "
-                            "output. Proceeding will result in broken masternode.\n\n"
-                            "Do you really want to continue?",
+                            "WARNING: You have asked to transfer a masternode's collateral (1000 GIN) transaction "
+                            "output. These transactions are shown with a red background.\n\n"
+                            "Proceeding will BREAK your masternode! (Name: %s)\n\n"
+                            "Do you really want to continue?" % utxo.masternode.name,
                             buttons=QMessageBox.Yes | QMessageBox.Cancel,
                             default_button=QMessageBox.Cancel, icon=QMessageBox.Warning) == QMessageBox.Cancel:
                         return
                 if utxo.coinbase_locked:
                     coinbase_locked_exist = True
 
-                bip32_path = utxo.bip32_path
-                if not bip32_path:
-                    self.errorMsg(f'No BIP32 path for UTXO: {utxo.txid}. Cannot continue.')
-                    return
+                # FIXME: Cut for speed
+                # bip32_path = utxo.bip32_path
+                # if not bip32_path:
+                #     self.errorMsg(f'No BIP32 path for UTXO: {utxo.txid}. Cannot continue.')
+                #     return
 
-                addr_hw = bip32_to_address.get(bip32_path, None)
-                if not addr_hw:
-                    addr_hw = get_address(self.main_ui.hw_session, bip32_path)
-                    bip32_to_address[bip32_path] = addr_hw
-                if addr_hw != utxo.address:
-                    self.errorMsg("<html style=\"font-weight:normal\">Dash address inconsistency between UTXO "
-                                  f"({utxo_idx+1}) and HW path: {bip32_path}.<br><br>"
-                                  f"<b>HW address</b>: {addr_hw}<br>"
-                                  f"<b>UTXO address</b>: {utxo.address}<br><br>"
-                                  "Cannot continue.</html>")
-                    return
+                # addr_hw = bip32_to_address.get(bip32_path, None)
+                # if not addr_hw:
+                #     addr_hw = get_address(self.main_ui.hw_session, bip32_path)
+                #     bip32_to_address[bip32_path] = addr_hw
+                # if addr_hw != utxo.address:
+                #     self.errorMsg("<html style=\"font-weight:normal\">GINcoin address inconsistency between UTXO "
+                #                   f"({utxo_idx+1}) and HW path: {bip32_path}.<br><br>"
+                #                   f"<b>HW address</b>: {addr_hw}<br>"
+                #                   f"<b>UTXO address</b>: {utxo.address}<br><br>"
+                #                   "Cannot continue.</html>")
+                #     return
 
             if coinbase_locked_exist:
-                if self.queryDlg("Warning: you have selected at least one coinbase transaction without the "
-                                 "required number of confirmations (100). Your transaction will be "
-                                 "rejected by the network.\n\n"
+                if self.queryDlg("WARNING: You have selected at least one coinbase transaction without the "
+                                 "required number of confirmations (100). These transactions are shown in a green font, "
+                                 "and represent mining/masternode block rewards.\n\n"
+                                 "Your transaction will be rejected by the network!\n\n"
                                  "Do you really want to continue?",
                         buttons=QMessageBox.Yes | QMessageBox.Cancel,
                         default_button=QMessageBox.Cancel, icon=QMessageBox.Warning) == QMessageBox.Cancel:
@@ -659,7 +663,7 @@ class WalletDlg(QDialog, ui_wallet_dlg.Ui_WalletDlg, WndUtils):
                 log.exception('Unknown error occurred.')
                 self.errorMsg(str(e))
         else:
-            self.errorMsg('No UTXO to send.')
+            self.errorMsg('Please select some transactions in the table to use.\n\n(use the Ctrl/Cmd and Shift keys to multi-select, or hit [Select All])')
 
     def process_after_sending_transaction(self, inputs: List[UtxoType], outputs: List[TxOutputType], tx_json: Dict):
         def break_call():
@@ -766,8 +770,7 @@ class WalletDlg(QDialog, ui_wallet_dlg.Ui_WalletDlg, WndUtils):
     def show_address_on_hw(self, addr: Bip44AddressType):
         try:
             _a = hw_intf.get_address(self.hw_session, addr.bip32_path, True,
-                                     f'Displaying address <b>{addr.address}</b>.<br>Click the confirmation button on'
-                                     f' your device.')
+                                     f"Displaying address:<br><br><span style=\"font-size:14pt;\"<b>{addr.address}</b></span><br><br>Please check the address on your device.")
             if _a != addr.address:
                 raise Exception('Address inconsistency between db cache and device')
         except CancelException:
@@ -1536,9 +1539,11 @@ class WalletDlg(QDialog, ui_wallet_dlg.Ui_WalletDlg, WndUtils):
 
                         # for security reasons get the address from hardware wallet and compare it to the one
                         # read from db cache
-                        addr_hw = hw_intf.get_address(self.hw_session, addr.bip32_path, False)
-                        if addr_hw != addr.address:
-                            addr_str = 'Address inconsistency. Please clear the wallet cache.'
+
+                        # INFO: Disable for speed and to avoid fatal race condition. To verify address, use right-click + `Check address on device` instead.
+                        # addr_hw = hw_intf.get_address(self.hw_session, addr.bip32_path, False)
+                        # if addr_hw != addr.address:
+                        #     addr_str = 'Address inconsistency. Please clear the wallet cache.'
 
             elif self.hw_selected_account_id:
                 addr_lbl = 'XPUB'
@@ -1564,8 +1569,8 @@ class WalletDlg(QDialog, ui_wallet_dlg.Ui_WalletDlg, WndUtils):
 <table>
 <tr><td class="lbl">{addr_lbl}</td><td>{addr_str}</td></tr>
 <tr><td class="lbl">Path</td><td>{addr_path}</td></tr>
-<tr><td class="lbl">Balance</td><td>{app_utils.to_string(balance/1e8)} Dash</td></tr>
-<tr><td class="lbl">Received</td><td>{app_utils.to_string(received/1e8)} Dash</td></tr>
+<tr><td class="lbl">Balance</td><td>{app_utils.to_string(balance/1e8)} GIN</td></tr>
+<tr><td class="lbl">Received</td><td>{app_utils.to_string(received/1e8)} GIN</td></tr>
 </table>
 </body>
 """

@@ -849,7 +849,7 @@
                   </size>
                  </property>
                  <property name="text">
-                  <string>44'/5'/0'/0/0</string>
+                  <string>44'/2000'/0'/0/0</string>
                  </property>
                  <property name="echoMode">
                   <enum>QLineEdit::Normal</enum>
@@ -861,7 +861,7 @@
              <item>
               <widget class="QLabel" name="label_5">
                <property name="text">
-                <string>Dash addresses which will be available in the device after finishing the process:</string>
+                <string>GINcoin addresses which will be available in the device after finishing the process:</string>
                </property>
                <property name="wordWrap">
                 <bool>true</bool>

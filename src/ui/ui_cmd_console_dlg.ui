@@ -19,8 +19,8 @@
      <property name="font">
       <font>
        <family>Courier New</family>
-       <pointsize>12</pointsize>
-       <kerning>false</kerning>
+       <pointsize>10</pointsize>
+       <kerning>true</kerning>
       </font>
      </property>
      <property name="lineWrapMode">

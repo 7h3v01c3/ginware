@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Form implementation generated from reading ui file '/Users/blogin/PycharmProjects/DMT-git/src/ui/ui_cmd_console_dlg.ui'
+# Form implementation generated from reading ui file 'ui_cmd_console_dlg.ui'
 #
 # Created by: PyQt5 UI code generator 5.9.2
 #
@@ -17,8 +17,8 @@ class Ui_CmdConsoleDlg(object):
         self.edtCmdLog = QtWidgets.QTextBrowser(CmdConsoleDlg)
         font = QtGui.QFont()
         font.setFamily("Courier New")
-        font.setPointSize(12)
-        font.setKerning(False)
+        font.setPointSize(10)
+        font.setKerning(True)
         self.edtCmdLog.setFont(font)
         self.edtCmdLog.setLineWrapMode(QtWidgets.QTextEdit.WidgetWidth)
         self.edtCmdLog.setObjectName("edtCmdLog")

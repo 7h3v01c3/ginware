@@ -39,8 +39,9 @@ import wallet_dlg
 import app_utils
 from initialize_hw_dlg import HwInitializeDlg
 from masternode_details import WdgMasternodeDetails
-from proposals_dlg import ProposalsDlg
-from app_config import AppConfig, MasternodeConfig, APP_NAME_SHORT, DMN_ROLE_OWNER, DMN_ROLE_OPERATOR, InputKeyType
+# FIXME: Disable governance for GIN
+# from proposals_dlg import ProposalsDlg
+from app_config import AppConfig, MasternodeConfig, APP_NAME_SHORT, APP_NAME_LONG, DMN_ROLE_OWNER, DMN_ROLE_OPERATOR, InputKeyType
 from app_defs import PROJECT_URL, HWType, get_note_url
 from dash_utils import bip32_path_n_to_string
 from dashd_intf import DashdInterface, DashdIndexException
@@ -51,6 +52,7 @@ from psw_cache import SshPassCache
 from sign_message_dlg import SignMessageDlg
 from wnd_utils import WndUtils
 from ui import ui_main_dlg
+from masternode_full import MasternodeFull
 
 
 class MainWindow(QMainWindow, WndUtils, ui_main_dlg.Ui_MainWindow):
@@ -81,6 +83,7 @@ class MainWindow(QMainWindow, WndUtils, ui_main_dlg.Ui_MainWindow):
 
         self.dashd_info = {}
         self.is_dashd_syncing = False
+        self.is_dashd_connected = False
         self.dashd_connection_ok = False
         self.connecting_to_dashd = False
         self.cur_masternode: MasternodeConfig = None
@@ -129,6 +132,7 @@ class MainWindow(QMainWindow, WndUtils, ui_main_dlg.Ui_MainWindow):
         self.setIcon(self.action_disconnect_hw, "hw-disconnect.png")
         self.setIcon(self.action_transfer_funds_for_any_address, "wallet.png")
         self.setIcon(self.action_sign_message_for_cur_mn, "sign@32px.png")
+        self.setIcon(self.action_see_all_masternodes, "masternodes.png")
         self.setIcon(self.action_hw_configuration, "hw.png")
         self.setIcon(self.action_hw_initialization_recovery, "recover.png")
         # icons will not be visible in menu
@@ -140,6 +144,7 @@ class MainWindow(QMainWindow, WndUtils, ui_main_dlg.Ui_MainWindow):
         self.action_disconnect_hw.setIconVisibleInMenu(False)
         self.action_run_trezor_emulator.setIconVisibleInMenu(False)
         self.action_run_trezor_emulator.setVisible(False)
+        self.action_sign_message_for_cur_mn.setVisible(False)
         self.action_transfer_funds_for_any_address.setIconVisibleInMenu(False)
         self.action_sign_message_for_cur_mn.setIconVisibleInMenu(False)
         self.action_hw_configuration.setIconVisibleInMenu(False)
@@ -164,7 +169,6 @@ class MainWindow(QMainWindow, WndUtils, ui_main_dlg.Ui_MainWindow):
         self.wdg_masternode.label_width_changed.connect(self.set_mn_labels_width)
 
         self.mns_user_refused_updating = {}
-
         # after loading whole configuration, reset 'modified' variable
         try:
             self.config.read_from_file(hw_session=self.hw_session, create_config_file=True)
@@ -237,6 +241,8 @@ class MainWindow(QMainWindow, WndUtils, ui_main_dlg.Ui_MainWindow):
         self.wdg_masternode.set_masternode(self.cur_masternode)
         self.action_open_log_file.setText('Open log file (%s)' % self.config.log_file)
         self.btnMigrateToDMN.setEnabled(True)
+        # FIXME: Disable deterministic masternodes for GIN
+        self.btnMigrateToDMN.setVisible(False)
         self.update_edit_controls_state()
 
     def load_configuration_from_file(self, file_name: str, ask_save_changes = True) -> None:
@@ -342,7 +348,7 @@ class MainWindow(QMainWindow, WndUtils, ui_main_dlg.Ui_MainWindow):
         else:
             encrypted_part = ''
 
-        title = f'{APP_NAME_SHORT}{app_version_part}{testnet_part}{cfg_file_name_part}{encrypted_part}'
+        title = f'{APP_NAME_LONG}{app_version_part}{testnet_part}{cfg_file_name_part}{encrypted_part}'
 
         self.setWindowTitle(title)
 
@@ -452,7 +458,7 @@ class MainWindow(QMainWindow, WndUtils, ui_main_dlg.Ui_MainWindow):
         """
         try:
             response = urllib.request.urlopen(
-                'https://raw.githubusercontent.com/Bertrand256/dash-masternode-tool/master/app-params.json',
+                'https://raw.githubusercontent.com/GIN-coin/ginware/master/app-params.json',
                 context=ssl._create_unverified_context())
             contents = response.read()
             remote_app_params = simplejson.loads(contents)
@@ -464,31 +470,34 @@ class MainWindow(QMainWindow, WndUtils, ui_main_dlg.Ui_MainWindow):
                     remote_version_str = remote_app_params.get("appCurrentVersion")
                     if remote_version_str:
                         if app_utils.is_version_bigger(remote_version_str, self.config.app_version):
-                            if sys.platform == 'win32':
-                                item_name = 'win'
-                                no_bits = platform.architecture()[0].replace('bit', '')
-                                if no_bits == '32':
-                                    item_name += '32'
-                                else:
-                                    item_name += '64'
-                            elif sys.platform == 'darwin':
-                                item_name = 'mac'
-                            else:
-                                item_name = 'linux'
-                            exe_url = ''
-                            exe_down = remote_app_params.get('exeDownloads')
-                            if exe_down:
-                                exe_url = exe_down.get(item_name)
-                            if exe_url:
-                                msg = "New version (" + remote_version_str + ') available: <a href="' + exe_url + '">download</a>.'
-                            else:
-                                msg = "New version (" + remote_version_str + ') available. Go to the project website: <a href="' + \
-                                      PROJECT_URL + '">open</a>.'
+                            # Disable direct linking without in-built verification.
+                            # if sys.platform == 'win32':
+                            #     item_name = 'win'
+                            #     no_bits = platform.architecture()[0].replace('bit', '')
+                            #     if no_bits == '32':
+                            #         item_name += '32'
+                            #     else:
+                            #         item_name += '64'
+                            # elif sys.platform == 'darwin':
+                            #     item_name = 'mac'
+                            # else:
+                            #     item_name = 'linux'
+                            # exe_url = ''
+                            # exe_down = remote_app_params.get('exeDownloads')
+                            # if exe_down:
+                            #     exe_url = exe_down.get(item_name)
+                            # if exe_url:
+                            #     msg = "New version (v" + remote_version_str + ') available: <a href="' + exe_url + '">download</a>.'
+                            # else:
+                            msg = "New version (v" + remote_version_str + ') available. Please see <a href="' + \
+                                    PROJECT_URL + '/releases">here</a>.'
 
                             self.setMessage(msg, 'green')
                         else:
                             if force_check:
-                                self.setMessage("You have the latest version of %s." % APP_NAME_SHORT, 'green')
+                                self.setMessage("You have the latest version of %s." % APP_NAME_LONG, 'green')
+                                time.sleep(3)
+                                self.setMessage("")
                     elif force_check:
                         self.setMessage("Could not read the remote version number.", 'orange')
 
@@ -545,6 +554,10 @@ class MainWindow(QMainWindow, WndUtils, ui_main_dlg.Ui_MainWindow):
         """Shows status message related to disconnection from Dash RPC node."""
         self.setStatus1Text('<b>RPC network status:</b> not connected', 'black')
 
+    def show_connection_isolated(self):
+        """Shows status message related to isolation from Dash network (daemon itself is not connected to network)."""
+        self.setStatus1Text('<b>RPC network status:</b> isolated (%s)' % self.dashd_intf.get_active_conn_description(), 'orange')
+
     def connect_dash_network(self, wait_for_check_finish=False, call_on_check_finished=None):
         """
         Connects do dash daemon if not connected before and returnes if it was successful.
@@ -571,13 +584,18 @@ class MainWindow(QMainWindow, WndUtils, ui_main_dlg.Ui_MainWindow):
                 logging.info('wait_for_synch_finished_thread')
                 mtx.lock()
                 while not ctrl.finish:
+                    connected = self.dashd_intf.isconnected()
                     synced = self.dashd_intf.issynchronized()
+                    if not connected:
+                        self.is_dashd_connected = False
+                        self.show_connection_isolated()
+                        break
                     if synced:
                         self.is_dashd_syncing = False
                         self.show_connection_successful()
                         break
                     mnsync = self.dashd_intf.mnsync()
-                    self.setMessage('Dashd is synchronizing: AssetID: %s, AssetName: %s' %
+                    self.setMessage('GINcoin daemon is synchronising: AssetID: %s, AssetName: %s' %
                                         (str(mnsync.get('AssetID', '')),
                                          str(mnsync.get('AssetName', ''))
                                          ), style='{background-color:rgb(255,128,0);color:white;padding:3px 5px 3px 5px; border-radius:3px}')
@@ -599,17 +617,24 @@ class MainWindow(QMainWindow, WndUtils, ui_main_dlg.Ui_MainWindow):
             """
             try:
                 synced = self.dashd_intf.issynchronized()
+                connected = self.dashd_intf.isconnected()
                 self.dashd_info = self.dashd_intf.getinfo(verify_node=True)
                 self.dashd_connection_ok = True
-                if not synced:
-                    logging.info("dashd not synced")
-                    if not self.is_dashd_syncing and not (hasattr(self, 'wait_for_dashd_synced_thread') and
-                                                                  self.wait_for_dashd_synced_thread is not None):
-                        self.is_dashd_syncing = True
-                        self.wait_for_dashd_synced_thread = self.run_thread(self, wait_for_synch_finished_thread, (),
-                                                                            on_thread_finish=connect_finished)
+                if not connected:
+                    logging.info("gincoind is not connected to the network.")
+                    self.is_dashd_connected = False
+                    self.show_connection_isolated()
                 else:
-                    self.is_dashd_syncing = False
+                    self.is_dashd_connected = True
+                    if not synced:
+                        logging.info("gincoind is not synced")
+                        if not self.is_dashd_syncing and not (hasattr(self, 'wait_for_dashd_synced_thread') and
+                                                                    self.wait_for_dashd_synced_thread is not None):
+                            self.is_dashd_syncing = True
+                            self.wait_for_dashd_synced_thread = self.run_thread(self, wait_for_synch_finished_thread, (),
+                                                                                on_thread_finish=connect_finished)
+                    else:
+                        self.is_dashd_syncing = False
                 self.setMessage('')
             except Exception as e:
                 err = str(e)
@@ -667,11 +692,16 @@ class MainWindow(QMainWindow, WndUtils, ui_main_dlg.Ui_MainWindow):
             self.action_transfer_funds_for_any_address.setEnabled(True)
 
             if self.dashd_connection_ok:
-                self.show_connection_successful()
-                if self.is_dashd_syncing:
-                    self.infoMsg('Connection successful, but Dash daemon is synchronizing.')
+                if not self.is_dashd_connected:
+                    self.show_connection_isolated()
+                    self.infoMsg('Successfully connected, but the daemon itself is not connected to the GINcoin network.')
                 else:
-                    self.infoMsg('Connection successful.')
+                    self.show_connection_successful()
+                    if self.is_dashd_syncing:
+                        self.infoMsg('Successfully connected, but the daemon is still synchronising with the GINcoin network.')
+                    # INFO: Showing a message box (self.infoMsg) is annoying. Change to console log (logging.info).
+                    else:
+                        logging.info('Successfully connected to the GINcoin network.')
             else:
                 if self.dashd_intf.last_error_message:
                     self.errorMsg('Connection error: ' + self.dashd_intf.last_error_message)
@@ -770,7 +800,7 @@ class MainWindow(QMainWindow, WndUtils, ui_main_dlg.Ui_MainWindow):
                                                         hw_type=self.config.hw_type)
 
                     if self.config.dash_network == 'TESTNET':
-                        # check if Dash testnet is supported by this hardware wallet
+                        # check if GINcoin testnet is supported by this hardware wallet
                         found_testnet_support = False
                         if self.config.hw_type in (HWType.trezor, HWType.keepkey):
                             try:
@@ -782,16 +812,16 @@ class MainWindow(QMainWindow, WndUtils, ui_main_dlg.Ui_MainWindow):
                                     found_testnet_support = True
                             except Exception as e:
                                 if str(e).find('Invalid coin name') < 0:
-                                    logging.exception('Failed when looking for Dash testnet support')
+                                    logging.exception('Failed when looking for GINcoin testnet support')
                         elif self.config.hw_type == HWType.ledger_nano_s:
                             addr = hw_intf.get_address(self.hw_session,
                                                        dash_utils.get_default_bip32_path(self.config.dash_network))
                             if dash_utils.validate_address(addr, self.config.dash_network):
-                                found_testnet_support = False
+                                found_testnet_support = True
 
                         if not found_testnet_support:
                             url = get_note_url('DMT0002')
-                            msg = f'Your hardware wallet device does not support Dash TESTNET ' \
+                            msg = f'Your hardware wallet device does not support GINcoin TESTNET ' \
                                   f'(<a href="{url}">see details</a>).'
                             self.errorMsg(msg)
                             try:
@@ -802,7 +832,7 @@ class MainWindow(QMainWindow, WndUtils, ui_main_dlg.Ui_MainWindow):
                             return
 
                     logging.info('Connected to a hardware wallet')
-                    self.setStatus2Text('<b>HW status:</b> connected to %s' % hw_intf.get_hw_label(self.hw_client),
+                    self.setStatus2Text('<b>HW status:</b> Connected to %s' % hw_intf.get_hw_label(self.hw_client),
                                         'green')
                     self.update_edit_controls_state()
                 except CancelException:
@@ -814,7 +844,7 @@ class MainWindow(QMainWindow, WndUtils, ui_main_dlg.Ui_MainWindow):
                     except Exception:
                         pass
                     logging.info('Could not connect to a hardware wallet')
-                    self.setStatus2Text('<b>HW status:</b> cannot connect to %s device' % self.getHwName(), 'red')
+                    self.setStatus2Text('<b>HW status:</b> Cannot connect to %s device' % self.getHwName(), 'red')
                     self.errorMsg(str(e))
 
                 ret = self.hw_client
@@ -852,11 +882,12 @@ class MainWindow(QMainWindow, WndUtils, ui_main_dlg.Ui_MainWindow):
         self.update_edit_controls_state()
         if self.hw_client:
             try:
+                # INFO: Showing a message box (self.infoMsg) is annoying. Change to console log (logging.info).
                 if self.config.hw_type in (HWType.trezor, HWType.keepkey):
-                    self.infoMsg('Connection to %s device (%s) successful.' %
+                    logging.info('Connection to %s device (%s) successful.' %
                                  (self.getHwName(), hw_intf.get_hw_label(self.hw_client)))
                 elif self.config.hw_type == HWType.ledger_nano_s:
-                    self.infoMsg('Connection to %s device successful.' %
+                    logging.info('Connection to %s device successful.' %
                                  (self.getHwName(),))
             except CancelException:
                 if self.hw_client:
@@ -882,8 +913,9 @@ class MainWindow(QMainWindow, WndUtils, ui_main_dlg.Ui_MainWindow):
     def on_btnDeleteMn_clicked(self):
         if self.cur_masternode:
             msg = QMessageBox()
-            msg.setIcon(QMessageBox.Warning)
-            msg.setText('Do you really want to delete current masternode configuration?')
+            msg.setIcon(QMessageBox.Critical)
+            msg.setWindowTitle('Are you sure?')
+            msg.setText('Do you really want to DELETE the current masternode configuration?')
             msg.setStandardButtons(QMessageBox.Yes | QMessageBox.No)
             msg.setDefaultButton(QMessageBox.No)
             retval = msg.exec_()
@@ -982,7 +1014,7 @@ class MainWindow(QMainWindow, WndUtils, ui_main_dlg.Ui_MainWindow):
                                         in_mn.port = ipelems[1]
                                     else:
                                         in_mn.ip = mn_ipport
-                                        in_mn.port = '9999'
+                                        in_mn.port = '10111'
                                     in_mn.privateKey = mn_privkey
                                     in_mn.collateralAddress = mn_dash_addr
                                     in_mn.collateralTx = mn_tx_hash
@@ -1096,10 +1128,11 @@ class MainWindow(QMainWindow, WndUtils, ui_main_dlg.Ui_MainWindow):
             self.action_gen_mn_priv_key_uncompressed.setEnabled(editing)
             self.action_gen_mn_priv_key_compressed.setEnabled(editing)
             self.btnDeleteMn.setEnabled(self.cur_masternode is not None)
-            self.btnEditMn.setEnabled(not self.editing_enabled and self.cur_masternode is not None)
-            self.btnCancelEditingMn.setEnabled(self.editing_enabled and self.cur_masternode is not None)
+            self.btnEditMn.setVisible(not self.editing_enabled and self.cur_masternode is not None)
+            self.btnCancelEditingMn.setVisible(self.editing_enabled and self.cur_masternode is not None)
             self.btnDuplicateMn.setEnabled(self.cur_masternode is not None)
             self.action_save_config_file.setEnabled(self.config.is_modified())
+            self.action_check_for_updates.setEnabled(self.config.check_for_updates)
             self.action_disconnect_hw.setEnabled(True if self.hw_client else False)
             self.btnRefreshMnStatus.setEnabled(self.cur_masternode is not None)
             self.btnBroadcastMn.setEnabled(self.cur_masternode is not None)
@@ -1133,7 +1166,7 @@ class MainWindow(QMainWindow, WndUtils, ui_main_dlg.Ui_MainWindow):
             mn_template = cur_masternode_sav.name
         else:
             if self.app_config.is_testnet():
-                new_mn.port = '19999'
+                new_mn.port = '12111'
             mn_template = 'MN'
         name_found = None
         for nr in range(1, 100):
@@ -1227,53 +1260,67 @@ class MainWindow(QMainWindow, WndUtils, ui_main_dlg.Ui_MainWindow):
         """
         if self.cur_masternode:
             if not self.cur_masternode.collateralTx:
-                self.errorMsg("Collateral transaction id not set.")
+                self.errorMsg("Collateral TX hash is missing!")
                 return
             try:
                 int(self.cur_masternode.collateralTx, 16)
             except ValueError:
-                self.errorMsg('Invalid collateral transaction id (should be hexadecimal string).')
+                self.errorMsg('Invalid collateral TX hash (it should be hexadecimal)!')
                 return
 
-            if not re.match('\d{1,4}', self.cur_masternode.collateralTxIndex):
-                self.errorMsg("Invalid collateral transaction index.")
+            if not re.match('^\d{1,5}$', self.cur_masternode.collateralTxIndex):
+                self.errorMsg("Invalid collateral TX index!")
                 return
 
-            if not re.match('\d{1,4}', self.cur_masternode.port):
-                self.errorMsg("Invalid masternode's TCP port number.")
+            if not re.match('^\d{1,5}$', self.cur_masternode.port):
+                self.errorMsg("Invalid port number!")
                 return
 
-            if not re.match('\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}', self.cur_masternode.ip):
-                self.errorMsg("Invalid masternode's IP address.")
+            if not re.match('^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}$', self.cur_masternode.ip):
+                self.errorMsg("Invalid IP address!")
                 return
 
             if not self.cur_masternode.privateKey:
-                self.errorMsg("Masternode's private key not set.")
+                self.errorMsg("The masternode private key is not set!")
                 return
         else:
-            self.errorMsg("No masternode selected.")
+            self.errorMsg("No masternode selected!")
             return
 
         self.connect_dash_network(wait_for_check_finish=True)
         if not self.dashd_connection_ok:
-            self.errorMsg("Connection to Dash daemon is not established.")
+            self.errorMsg("Connection to GINcoin daemon is not established.")
             return
         if self.is_dashd_syncing:
-            self.warnMsg("The Dash daemon you are connected to is currently synchronizing. You need wait "
+            self.warnMsg("The GINcoin daemon you are connected to is currently synchronising. You need to wait "
                          "until it's finished.")
             return
 
+        tx = self.dashd_intf.getrawtransaction(self.cur_masternode.collateralTx, 1, skip_cache=True)
+        confirmations = tx.get('confirmations', 0)
+        if confirmations < 15:
+            if   confirmations == 0: conf_str = 'has no confirmations yet'
+            elif confirmations == 1: conf_str = 'has only 1 confirmation'
+            else                   : conf_str = 'has only %d confirmations' % confirmations
+            if self.queryDlg("WARNING: This masternode's collateral transaction %s."
+                             "\nMasternodes with less than 15 confirmations will fail to start - please wait."
+                             "\n\nDo you want to try and start this masternode anyway?" % conf_str,
+                             default_button=QMessageBox.Cancel, icon=QMessageBox.Warning) == QMessageBox.Cancel:
+                return
+
         mn_status, _ = self.get_masternode_status(self.cur_masternode)
         if mn_status in ('ENABLED', 'PRE_ENABLED'):
-            if self.queryDlg("Warning: masternode state is %s. \n\nDo you really want to sent 'Start masternode' "
-                             "message? " % mn_status, default_button=QMessageBox.Cancel,
-                             icon=QMessageBox.Warning) == QMessageBox.Cancel:
+            if mn_status == 'PRE_ENABLED': status_hint = 'It usually takes between 5-15 minutes for PRE_ENABLED to become ENABLED.\nPlease be patient, as restarting this node may reset the wait time!\n\n'
+            else                         : status_hint = 'Restarting this node will reset its position in the reward queue.\nYour next reward may take a lot longer than usual!\n\n'
+            if self.queryDlg("WARNING: This masternode is already %s.\n\n%s"
+                             "Are you SURE you still want to restart this masternode?" % (mn_status, status_hint),
+                              default_button=QMessageBox.Cancel, icon=QMessageBox.Warning) == QMessageBox.Cancel:
                 return
 
         try:
             mn_privkey = dash_utils.wif_to_privkey(self.cur_masternode.privateKey, self.config.dash_network)
             if not mn_privkey:
-                self.errorMsg('Invalid masternode private key')
+                self.errorMsg('Invalid masternode private key!')
                 return
 
             self.connect_hardware_wallet()
@@ -1294,7 +1341,7 @@ class MainWindow(QMainWindow, WndUtils, ui_main_dlg.Ui_MainWindow):
                 self.update_edit_controls_state()
             elif hw_collateral_address != cfg_collateral_address:
                 # verify config's collateral addres with hardware wallet
-                if self.queryDlg(message="The Dash address retrieved from the hardware wallet (%s) for the configured "
+                if self.queryDlg(message="The GINcoin address retrieved from the hardware wallet (%s) for the configured "
                                          "BIP32 path does not match the collateral address entered in the "
                                          "configuration: %s.\n\n"
                                          "Do you really want to continue?" %
@@ -1303,7 +1350,7 @@ class MainWindow(QMainWindow, WndUtils, ui_main_dlg.Ui_MainWindow):
                     return
 
             # check if there is 1000 Dash collateral
-            msg_verification_problem = 'You can continue without verification step if you are sure, that ' \
+            msg_verification_problem = 'You can continue without verification step if you are SURE that the ' \
                                        'TX hash/index are correct.'
             try:
                 utxos = self.dashd_intf.getaddressutxos([hw_collateral_address])
@@ -1317,7 +1364,7 @@ class MainWindow(QMainWindow, WndUtils, ui_main_dlg.Ui_MainWindow):
                 if found:
                     if utxo.get('satoshis', None) != 100000000000:
                         if self.queryDlg(
-                                message="Collateral transaction output should equal 100000000000 Satoshis (1000 Dash)"
+                                message="Collateral transaction output should equal 100000000000 Satoshis (1000 GIN)"
                                         ", but its value is: %d Satoshis.\n\nDo you really want to continue?"
                                         % (utxo['satoshis']),
                                 buttons=QMessageBox.Yes | QMessageBox.Cancel,
@@ -1379,15 +1426,12 @@ class MainWindow(QMainWindow, WndUtils, ui_main_dlg.Ui_MainWindow):
 
             ret = self.dashd_intf.masternodebroadcast("decode", broadcast_msg)
             if ret['overall'].startswith('Successfully decoded broadcast messages for 1 masternodes'):
-                dashd_version = {70208: 'v0.12.2',
-                                 70209: 'v0.12.3',
-                                 70210: 'v0.12.3',
-                                 70213: 'v0.13.x'}.get(mn_protocol_version, '')
+                dashd_version = {70208: 'v1.2'}.get(mn_protocol_version, '')
                 if dashd_version:
-                    dashd_version = f', dashd {dashd_version}'
+                    dashd_version = f', gincoind {dashd_version}'
 
-                if self.queryDlg(f'Press "Yes" if you want to broadcast start masternode message (protocol version: '
-                                 f'{mn_protocol_version}{dashd_version}) or "Cancel" to exit.',
+                if self.queryDlg(f'Ready! Start this masternode?\n(Protocol Version: '
+                                 f'{mn_protocol_version}{dashd_version})',
                                 buttons=QMessageBox.Yes | QMessageBox.Cancel,
                                 default_button=QMessageBox.Yes, icon=QMessageBox.Information) == QMessageBox.Cancel:
                     return
@@ -1398,10 +1442,11 @@ class MainWindow(QMainWindow, WndUtils, ui_main_dlg.Ui_MainWindow):
                                   ret['overall'])
 
                 failed_count = 0
+                overall = ret['overall']
                 if match and len(match.groups()):
+                    if (int(match.group(1))): overall = 'Successfully started masternode!'
                     failed_count = int(match.group(2))
 
-                overall = ret['overall']
                 errorMessage = ''
 
                 if failed_count:
@@ -1414,7 +1459,7 @@ class MainWindow(QMainWindow, WndUtils, ui_main_dlg.Ui_MainWindow):
                 if failed_count == 0:
                     self.infoMsg(overall)
                 else:
-                    self.errorMsg('Failed to start masternode.\n\nResponse from Dash daemon: %s.' % errorMessage)
+                    self.errorMsg('Failed to start masternode.\n\nResponse from GINcoin daemon:\n%s.' % errorMessage)
             else:
                 logging.error('Start MN error: ' + str(ret))
                 errorMessage = ret[list(ret.keys())[0]].get('errorMessage')
@@ -1533,7 +1578,9 @@ class MainWindow(QMainWindow, WndUtils, ui_main_dlg.Ui_MainWindow):
             else:
                 mn_info = self.dashd_intf.masternodes_by_ip_port.get(ip_port)
 
-            dmn_tx = self.get_deterministic_tx(masternode)
+            # FIXME: Disable deterministic masternodes for GӀN
+            # dmn_tx = self.get_deterministic_tx(masternode)
+            dmn_tx = None
             if dmn_tx:
                 dmn_tx_state = dmn_tx.get('state')
             else:
@@ -1633,8 +1680,8 @@ class MainWindow(QMainWindow, WndUtils, ui_main_dlg.Ui_MainWindow):
                              ((masternode.is_deterministic and masternode.dmn_user_roles & DMN_ROLE_OWNER) or
                               not masternode.is_deterministic)) or \
                             (dmn_tx and masternode.dmn_tx_hash != dmn_tx.get('proTxHash')):
-                        msg = 'In the configuration of your masternode some information is missing that is ' \
-                              'available on the network. Do you want to update the configuration?'
+                        msg = 'In the configuration of your masternode, some information is missing, but can be ' \
+                              'filled in with information from the network. Do you want to update your configuration?'
 
                         if self.queryDlg(msg, buttons=QMessageBox.Yes | QMessageBox.No,
                                          default_button=QMessageBox.Yes,
@@ -1707,7 +1754,7 @@ class MainWindow(QMainWindow, WndUtils, ui_main_dlg.Ui_MainWindow):
                             owner_public_address_mismatch = True
                             logging.warning(
                                 f'The owner public address mismatch for masternode: {masternode.name}, '
-                                f'address from the app configuration: {owner_address_cfg}, address from the Dash '
+                                f'address from the app configuration: {owner_address_cfg}, address from the GINcoin '
                                 f'network: {owner_address_network}')
 
                         voting_address_network = dmn_tx_state.get('votingAddress')
@@ -1716,7 +1763,7 @@ class MainWindow(QMainWindow, WndUtils, ui_main_dlg.Ui_MainWindow):
                             voting_public_address_mismatch = True
                             logging.warning(
                                 f'The voting public address mismatch for masternode: {masternode.name}. '
-                                f'address from the app configuration: {voting_address_cfg}, address from the Dash '
+                                f'address from the app configuration: {voting_address_cfg}, address from the GINcoin '
                                 f'network: {voting_address_network}')
 
                         operator_pubkey_network = dmn_tx_state.get('pubKeyOperator')
@@ -1725,7 +1772,7 @@ class MainWindow(QMainWindow, WndUtils, ui_main_dlg.Ui_MainWindow):
                             operator_pubkey_mismatch = True
                             logging.warning(
                                 f'The operator public key mismatch for masternode: {masternode.name}. '
-                                f'pubkey from the app configuration: {operator_pubkey_cfg}, pubkey from the Dash '
+                                f'pubkey from the app configuration: {operator_pubkey_cfg}, pubkey from the GINcoin '
                                 f'network: {operator_pubkey_network}')
 
                 if mn_data_modified:
@@ -1762,11 +1809,11 @@ class MainWindow(QMainWindow, WndUtils, ui_main_dlg.Ui_MainWindow):
                         errors.append('<td class="error" colspan="2">Masternode IP and&frasl;or port number '
                                       'missing&frasl;mismatch</td>')
                     if owner_public_address_mismatch:
-                        errors.append('<td class="error" colspan="2">Owner Dash address mismatch</td>')
+                        errors.append('<td class="error" colspan="2">Owner GINcoin address mismatch</td>')
                     if operator_pubkey_mismatch:
                         errors.append('<td class="error" colspan="2">Operator public key mismatch</td>')
                     if voting_public_address_mismatch:
-                        errors.append('<td class="error" colspan="2">Voting Dash address mismatch</td>')
+                        errors.append('<td class="error" colspan="2">Voting GINcoin address mismatch</td>')
 
                     errors_msg = ''
                     if errors:
@@ -1846,7 +1893,7 @@ class MainWindow(QMainWindow, WndUtils, ui_main_dlg.Ui_MainWindow):
         else:
             enable_buttons()
             self.lblMnStatus.setText('')
-            self.errorMsg('Dash daemon not connected')
+            self.errorMsg('GINcoin daemon not connected')
 
     @pyqtSlot(bool)
     def on_action_transfer_funds_for_cur_mn_triggered(self):
@@ -1859,7 +1906,7 @@ class MainWindow(QMainWindow, WndUtils, ui_main_dlg.Ui_MainWindow):
                 self.errorMsg("Enter the masternode collateral BIP32 path. You can use the 'right arrow' button "
                               "on the right of the 'Collateral' edit box.")
             elif not self.cur_masternode.collateralAddress:
-                self.errorMsg("Enter the masternode collateral Dash address. You can use the 'left arrow' "
+                self.errorMsg("Enter the masternode collateral GINcoin address. You can use the 'left arrow' "
                               "button on the left of the 'BIP32 path' edit box.")
             else:
                 src_addresses.append((self.cur_masternode.collateralAddress, self.cur_masternode.collateralBip32Path))
@@ -1895,24 +1942,43 @@ class MainWindow(QMainWindow, WndUtils, ui_main_dlg.Ui_MainWindow):
           if the value is None, show the default utxo source type
         """
         if not self.dashd_intf.open():
-            self.errorMsg('Dash daemon not connected')
+            self.errorMsg('GINcoin daemon not connected')
         else:
             ui = wallet_dlg.WalletDlg(self, initial_mn_sel=initial_mn)
             ui.exec_()
 
     @pyqtSlot(bool)
-    def on_action_sign_message_for_cur_mn_triggered(self):
+    def on_btnSignMessageForCurrMn_clicked(self):
+        def verify_path(path):
+            if self.config.is_mainnet():
+                if not re.search(r"^44'?/2000'?/\d+'?/\d+/\d+$", path):
+                    return False
+            else:
+                if not re.search(r"^44'?/1'?/\d+'?/\d+/\d+$", path):
+                    return False
+            return True
+
         if self.cur_masternode:
             self.connect_hardware_wallet()
             if self.hw_client:
                 if not self.cur_masternode.collateralBip32Path:
-                    self.errorMsg("Empty masternode's collateral BIP32 path")
+                    self.errorMsg("ERROR: Unable to sign with this masternode's address.\n\nThis masternode's collateral path is empty.")
+                elif not verify_path(self.cur_masternode.collateralBip32Path):
+                    self.errorMsg("ERROR: Unable to sign with this masternode's address.\n\nThis masternode's collateral path seems to be invalid.")
                 else:
                     ui = SignMessageDlg(self, self.hw_session, self.cur_masternode.collateralBip32Path,
                                         self.cur_masternode.collateralAddress)
                     ui.exec_()
         else:
             self.errorMsg("To sign messages, you must select a masternode.")
+
+    @pyqtSlot(bool)
+    def on_action_see_all_masternodes_triggered(self):
+        if not self.dashd_intf.open():
+            self.errorMsg('GINcoin daemon not connected!')
+        else:
+            ui = MasternodeFull(self, self.app_config)
+            ui.exec_()
 
     @pyqtSlot(bool)
     def on_action_hw_configuration_triggered(self):
@@ -1932,10 +1998,11 @@ class MainWindow(QMainWindow, WndUtils, ui_main_dlg.Ui_MainWindow):
         ui = HwInitializeDlg(self)
         ui.exec_()
 
-    @pyqtSlot(bool)
-    def on_action_open_proposals_window_triggered(self):
-        ui = ProposalsDlg(self, self.dashd_intf)
-        ui.exec_()
+    # @pyqtSlot(bool)
+    # def on_action_open_proposals_window_triggered(self):
+        # FIXME: Disable governance for GIN
+        # ui = ProposalsDlg(self, self.dashd_intf)
+        # ui.exec_()
 
     @pyqtSlot(bool)
     def on_action_about_qt_triggered(self, enabled):

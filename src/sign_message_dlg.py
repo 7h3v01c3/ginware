@@ -5,6 +5,7 @@
 
 import base64
 from PyQt5.QtWidgets import QDialog
+from PyQt5.QtCore import Qt
 import wnd_utils as wnd_utils
 import hw_intf
 from app_defs import HWType
@@ -24,9 +25,11 @@ class SignMessageDlg(QDialog, ui_sign_message_dlg.Ui_SignMessageDlg, wnd_utils.W
     def setupUi(self):
         ui_sign_message_dlg.Ui_SignMessageDlg.setupUi(self, self)
         self.setWindowTitle('Sign message')
+        self.setWindowFlags(self.windowFlags() & ~Qt.WindowContextHelpButtonHint)
         self.btnSignMessage.clicked.connect(self.btnSignMessageClick)
         self.btnClose.clicked.connect(self.close)
-        self.lblSigningAddress.setText(self.address)
+        self.edtSigningAddress.setText(self.address)
+        self.edtSignedMessage.setWordWrapMode(3)
 
     def btnSignMessageClick(self):
         try:
@@ -37,7 +40,11 @@ class SignMessageDlg(QDialog, ui_sign_message_dlg.Ui_SignMessageDlg, wnd_utils.W
                     try:
                         msg_to_sign.encode('ascii')
                     except UnicodeEncodeError:
-                        self.warnMsg('Ledger wallets cannot sign non-ASCII and non-printable characters. Please '
+                        if len(msg_to_sign) > 140:
+                            self.warnMsg('Ledger wallets cannot sign non-ASCII and non-printable characters, and cannot'
+                                     'sign more than 140 characters. Please change your message and try again.')
+                        else:
+                            self.warnMsg('Ledger wallets cannot sign non-ASCII and non-printable characters. Please '
                                      'remove them from your message and try again.')
                         return
                     if len(msg_to_sign) > 140:
@@ -50,8 +57,9 @@ class SignMessageDlg(QDialog, ui_sign_message_dlg.Ui_SignMessageDlg, wnd_utils.W
                 # hex_message = binascii.hexlify(sig.signature).decode('base64')
                 self.edtSignedMessage.setPlainText(signed.decode('ascii'))
                 if sig.address != self.address:
-                    self.warnMsg('Message signed but signing address (%s) for BIP32 path (%s) differs from '
-                                 'required one: %s\n\nDid you enter correct passphrase?' % (sig.address, self.bip32path, self.address))
+                    self.warnMsg('The message was signed, but the signing address for the BIP32 path (%s) differs from the one '
+                                 'you intended.\n\nMaybe you entered a bad passphrase, and are not using the correct device for the current config?\n\n'
+                                 'Intended: %s\nActual: %s' % (self.bip32path, self.address, sig.address))
             else:
                 self.errorMsg('Empty message cannot be signed.')
 

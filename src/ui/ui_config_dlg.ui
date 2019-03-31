@@ -36,7 +36,7 @@
      </property>
      <widget class="QWidget" name="tabDashd">
       <attribute name="title">
-       <string>Dash network</string>
+       <string>GINcoin Network</string>
       </attribute>
       <layout class="QVBoxLayout" name="verticalLayout_3">
        <property name="spacing">
@@ -59,7 +59,7 @@
          <item>
           <widget class="QLabel" name="label_2">
            <property name="text">
-            <string>Dash network:</string>
+            <string>Network type:</string>
            </property>
           </widget>
          </item>
@@ -335,7 +335,17 @@
           </widget>
          </item>
          <item>
+          <widget class="QRadioButton" name="chbHwLedgerNanoS">
+           <property name="text">
+            <string>Ledger Nano S</string>
+           </property>
+          </widget>
+         </item>
+         <item>
           <widget class="QRadioButton" name="chbHwTrezor">
+           <property name="enabled">
+            <bool>true</bool>
+           </property>
            <property name="minimumSize">
             <size>
              <width>60</width>
@@ -358,6 +368,9 @@
          </item>
          <item>
           <widget class="QRadioButton" name="chbHwKeepKey">
+           <property name="enabled">
+            <bool>false</bool>
+           </property>
            <property name="minimumSize">
             <size>
              <width>70</width>
@@ -370,15 +383,14 @@
              <height>16777215</height>
             </size>
            </property>
+           <property name="visible">
+            <bool>false</bool>
+           </property>
+           <property name="toolTip">
+            <string>KeepKey wallets are not yet supported.</string>
+           </property>
            <property name="text">
             <string>KeepKey</string>
-           </property>
-          </widget>
-         </item>
-         <item>
-          <widget class="QRadioButton" name="chbHwLedgerNanoS">
-           <property name="text">
-            <string>Ledger Nano S</string>
            </property>
           </widget>
          </item>
@@ -482,27 +494,6 @@
          </property>
          <property name="text">
           <string>Backup config file</string>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <widget class="QCheckBox" name="chbConfirmWhenVoting">
-         <property name="text">
-          <string>Ask for confirmation when voting (proposals)</string>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <widget class="QCheckBox" name="chbAddRandomOffsetToVotingTime">
-         <property name="text">
-          <string>Add random offset to a vote time to enhance privacy (proposals)</string>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <widget class="QCheckBox" name="chbDownloadProposalExternalData">
-         <property name="text">
-          <string>Download external proposal attributes (DashCentral.org)</string>
          </property>
         </widget>
        </item>

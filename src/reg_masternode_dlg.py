@@ -177,7 +177,7 @@ class RegMasternodeDlg(QDialog, ui_reg_masternode_dlg.Ui_RegMasternodeDlg, WndUt
 
         def get_label_text(prefix:str, key_type: str, tooltip_anchor: str, style: str):
             lbl = prefix + ' ' + \
-                  {'privkey': 'private key', 'pubkey': 'public key', 'address': 'Dash address'}.get(key_type, '???')
+                  {'privkey': 'private key', 'pubkey': 'public key', 'address': 'GINcoin address'}.get(key_type, '???')
 
             change_mode = f'(<a href="{tooltip_anchor}">use {tooltip_anchor}</a>)'
             return f'<table style="float:right;{style_to_color(style)}"><tr><td><b>{lbl}</b></td><td>{change_mode}</td></tr></table>'
@@ -188,7 +188,7 @@ class RegMasternodeDlg(QDialog, ui_reg_masternode_dlg.Ui_RegMasternodeDlg, WndUt
                 key_type, tooltip_anchor, placeholder_text = ('privkey', 'address', 'Enter the owner private key')
                 style = ''
             else:
-                key_type, tooltip_anchor, placeholder_text = ('address', 'privkey', 'Enter the owner Dash address')
+                key_type, tooltip_anchor, placeholder_text = ('address', 'privkey', 'Enter the owner GINcoin address')
                 style = 'hl1'
             self.lblOwnerKey.setText(get_label_text('Owner', key_type, tooltip_anchor, style))
             self.edtOwnerKey.setPlaceholderText(placeholder_text)
@@ -206,7 +206,7 @@ class RegMasternodeDlg(QDialog, ui_reg_masternode_dlg.Ui_RegMasternodeDlg, WndUt
                 key_type, tooltip_anchor, placeholder_text = ('privkey','address', 'Enter the voting private key')
                 style = ''
             else:
-                key_type, tooltip_anchor, placeholder_text = ('address', 'privkey', 'Enter the voting Dash address')
+                key_type, tooltip_anchor, placeholder_text = ('address', 'privkey', 'Enter the voting GINcoin address')
                 style = 'hl1'
             self.lblVotingKey.setText(get_label_text('Voting', key_type, tooltip_anchor, style))
             self.edtVotingKey.setPlaceholderText(placeholder_text)
@@ -256,7 +256,7 @@ class RegMasternodeDlg(QDialog, ui_reg_masternode_dlg.Ui_RegMasternodeDlg, WndUt
     @pyqtSlot(str)
     def on_lblOwnerKey_linkHovered(self, link):
         if link == 'address':
-            tt = 'Change input type to Dash address'
+            tt = 'Change input type to GINcoin address'
         else:
             tt = 'Change input type to private key'
         self.lblOwnerKey.setToolTip(tt)
@@ -272,7 +272,7 @@ class RegMasternodeDlg(QDialog, ui_reg_masternode_dlg.Ui_RegMasternodeDlg, WndUt
     @pyqtSlot(str)
     def on_lblVotingKey_linkHovered(self, link):
         if link == 'address':
-            tt = 'Change input type to Dash address'
+            tt = 'Change input type to GINcoin address'
         else:
             tt = 'Change input type to private key'
         self.lblVotingKey.setToolTip(tt)
@@ -454,7 +454,7 @@ class RegMasternodeDlg(QDialog, ui_reg_masternode_dlg.Ui_RegMasternodeDlg, WndUt
                     style = 'info'
                 else:
                     msg = 'If don\'t set the IP address and port fields, the masternode operator will ' \
-                          'have to issue a ProUpServTx transaction using Dash wallet.'
+                          'have to issue a ProUpServTx transaction using GINcoin wallet.'
                     style = 'warning'
         self.set_ctrl_message(self.lblIPMsg, msg, style)
 
@@ -466,7 +466,7 @@ class RegMasternodeDlg(QDialog, ui_reg_masternode_dlg.Ui_RegMasternodeDlg, WndUt
             style = 'error'
         else:
             if self.show_field_hinds:
-                msg = 'The owner\'s payout address can be set to any valid Dash address - it no longer ' \
+                msg = 'The owner\'s payout address can be set to any valid GINcoin address - it no longer ' \
                       'has to be the same as the collateral address.'
                 style = 'info'
         self.set_ctrl_message(self.lblPayoutMsg, msg, style)
@@ -505,8 +505,8 @@ class RegMasternodeDlg(QDialog, ui_reg_masternode_dlg.Ui_RegMasternodeDlg, WndUt
                         msg = 'Enter the owner private key or generate a new one by clicking the button on the right.'
                     style = 'info'
                 else:
-                    msg = 'You can use Dash address if the related private key is stored elsewhere, eg in ' \
-                          'the Dash Core wallet.<br><span class="warning">Note, that if you provide an address ' \
+                    msg = 'You can use GINcoin address if the related private key is stored elsewhere, eg in ' \
+                          'the GINcoin Core wallet.<br><span class="warning">Note, that if you provide an address ' \
                           'instead of a private key, you will not be able to publish ProRegTx ' \
                           'transaction through public RPC nodes in the next steps.</span>'
                     style = 'info'
@@ -556,8 +556,8 @@ class RegMasternodeDlg(QDialog, ui_reg_masternode_dlg.Ui_RegMasternodeDlg, WndUt
                                   'the right.'
                         style = 'info'
                     else:
-                        msg = 'You can use Dash address if the related private key is stored elsewhere, eg in ' \
-                              'the Dash Core wallet.<br><span class="warning">Note, that providing an address instead of ' \
+                        msg = 'You can use GINcoin address if the related private key is stored elsewhere, eg in ' \
+                              'the GINcoin Core wallet.<br><span class="warning">Note, that providing an address instead of ' \
                               'a private key will prevent you from voting on proposals in this program.</span>'
                         style = 'info'
 
@@ -575,8 +575,8 @@ class RegMasternodeDlg(QDialog, ui_reg_masternode_dlg.Ui_RegMasternodeDlg, WndUt
         nt = self.get_dash_node_type()
         msg = ''
         if nt is None:
-            msg = 'DIP-3 masternode registration involves sending a special transaction via the v0.13 Dash node ' \
-                  '(eg Dash-Qt). <b>Note, that this requires incurring a certain transaction fee, as with any ' \
+            msg = 'DIP-3 masternode registration involves sending a special transaction via the v0.13 GINcoin node ' \
+                  '(eg Gincoin-Qt). <b>Note, that this requires incurring a certain transaction fee, as with any ' \
                   'other ("normal") transaction.</b>'
         elif nt == NODE_TYPE_PUBLIC_RPC:
             msg = 'The ProRegTx transaction will be processed via the remote RPC node stored in the app configuration.' \
@@ -584,10 +584,10 @@ class RegMasternodeDlg(QDialog, ui_reg_masternode_dlg.Ui_RegMasternodeDlg, WndUt
                   '<b>Note 1:</b> this operation will involve signing transaction data with your <span style="color:red">owner key on the remote node</span>, ' \
                   'so use this method only if you trust the operator of that node (nodes <i>alice(luna, suzy).dash-masternode-tool.org</i> are maintained by the author of this application).<br><br>' \
                   '<b>Note 2:</b> if the operation fails (e.g. due to a lack of funds), choose the manual method ' \
-                  'using your own Dash wallet.'
+                  'using your own GINcoin wallet.'
 
         elif nt == NODE_TYPE_OWN:
-            msg = 'A Dash Core wallet (v0.13) with sufficient funds to cover transaction fees is required to ' \
+            msg = 'A GINcoin Core wallet (v0.13) with sufficient funds to cover transaction fees is required to ' \
                   'complete the next steps.'
         self.lblDashNodeTypeMessage.setText(msg)
 
@@ -832,7 +832,7 @@ class RegMasternodeDlg(QDialog, ui_reg_masternode_dlg.Ui_RegMasternodeDlg, WndUt
                 self.dmn_owner_privkey = ''
                 if not validate_address(self.dmn_owner_address, self.app_config.dash_network):
                     self.edtOwnerKey.setFocus()
-                    self.owner_key_validation_err_msg = 'Invalid owner Dash address.'
+                    self.owner_key_validation_err_msg = 'Invalid owner GINcoin address.'
         if self.owner_key_validation_err_msg:
             self.upd_owner_key_info(True)
             error_count += 1
@@ -890,7 +890,7 @@ class RegMasternodeDlg(QDialog, ui_reg_masternode_dlg.Ui_RegMasternodeDlg, WndUt
                     self.dmn_voting_privkey = ''
                     if not validate_address(self.dmn_voting_address, self.app_config.dash_network):
                         self.edtVotingKey.setFocus()
-                        self.voting_key_validation_err_msg = 'Invalid voting Dash address.'
+                        self.voting_key_validation_err_msg = 'Invalid voting GINcoin address.'
         else:
             # spork 15 not active - use the owner private key for voting
             self.dmn_voting_address = self.dmn_owner_address
@@ -967,9 +967,9 @@ class RegMasternodeDlg(QDialog, ui_reg_masternode_dlg.Ui_RegMasternodeDlg, WndUt
                                     f'field.')
                 ads = spk.get('addresses')
                 if not ads or len(ads) < 0:
-                    raise Exception('The collateral transaction output doesn\'t have the Dash address assigned.')
+                    raise Exception('The collateral transaction output doesn\'t have the GINcoin address assigned.')
                 if vout.get('valueSat') != 1000e8:
-                    raise Exception('The value of the collateral transaction output is not equal to 1000 Dash.')
+                    raise Exception('The value of the collateral transaction output is not equal to 1000 GIN.')
 
                 self.dmn_collateral_tx_address = ads[0]
             else:
@@ -1000,7 +1000,7 @@ class RegMasternodeDlg(QDialog, ui_reg_masternode_dlg.Ui_RegMasternodeDlg, WndUt
                       f'<br>This may take a while (<a href="break">break</a>)...'
                 self.dmn_collateral_tx_address_path = ''
         else:
-            msg = 'Looking for a BIP32 path of the Dash address related to the masternode collateral.<br>' \
+            msg = 'Looking for a BIP32 path of the GINcoin address related to the masternode collateral.<br>' \
                   'This may take a while (<a href="break">break</a>)....'
 
         if not self.dmn_collateral_tx_address_path and not self.finishing:

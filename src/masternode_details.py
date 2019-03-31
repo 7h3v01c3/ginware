@@ -53,7 +53,7 @@ class WdgMasternodeDetails(QWidget, ui_masternode_details.Ui_WdgMasternodeDetail
         self.act_view_as_mn_private_key = QAction('View as private key', self)
         self.act_view_as_mn_private_key.setData('privkey')
         self.act_view_as_mn_private_key.triggered.connect(self.on_masternode_view_key_type_changed)
-        self.act_view_as_mn_public_address = QAction('View as Dash address', self)
+        self.act_view_as_mn_public_address = QAction('View as GINcoin address', self)
         self.act_view_as_mn_public_address.setData('address')
         self.act_view_as_mn_public_address.triggered.connect(self.on_masternode_view_key_type_changed)
         self.act_view_as_mn_public_key = QAction('View as public key', self)
@@ -77,7 +77,7 @@ class WdgMasternodeDetails(QWidget, ui_masternode_details.Ui_WdgMasternodeDetail
         self.act_view_as_owner_private_key = QAction('View as private key', self)
         self.act_view_as_owner_private_key.setData('privkey')
         self.act_view_as_owner_private_key.triggered.connect(self.on_owner_view_key_type_changed)
-        self.act_view_as_owner_public_address = QAction('View as Dash address', self)
+        self.act_view_as_owner_public_address = QAction('View as GINcoin address', self)
         self.act_view_as_owner_public_address.setData('address')
         self.act_view_as_owner_public_address.triggered.connect(self.on_owner_view_key_type_changed)
         self.act_view_as_owner_public_key = QAction('View as public key', self)
@@ -102,7 +102,7 @@ class WdgMasternodeDetails(QWidget, ui_masternode_details.Ui_WdgMasternodeDetail
         self.act_view_as_voting_private_key = QAction('View as private key', self)
         self.act_view_as_voting_private_key.setData('privkey')
         self.act_view_as_voting_private_key.triggered.connect(self.on_voting_view_key_type_changed)
-        self.act_view_as_voting_public_address = QAction('View as Dash address', self)
+        self.act_view_as_voting_public_address = QAction('View as GINcoin address', self)
         self.act_view_as_voting_public_address.setData('address')
         self.act_view_as_voting_public_address.triggered.connect(self.on_voting_view_key_type_changed)
         self.act_view_as_voting_public_key = QAction('View as public key', self)
@@ -155,22 +155,24 @@ class WdgMasternodeDetails(QWidget, ui_masternode_details.Ui_WdgMasternodeDetail
         else:
             is_deterministic = False
 
-        if self.masternode:
-            self.lblTitle.setVisible(True)
-            self.lblAction.setVisible(self.edit_mode is True)
-            if is_deterministic:
-                lbl = '<span>Deterministic masternode</span>'
-                lbl_action = '<a href="change-to-non-dmn">Alter configuration to non-deterministic</a>'
-                color = '#2eb82e'
-            else:
-                lbl = '<span>Non-deterministic masternode</span>'
-                lbl_action = '<a href="change-to-dmn">Alter configuration to deterministic</a>'
-                color = 'navy'
-            self.lblTitle.setText(lbl)
-            self.lblTitle.setStyleSheet(
-                f'QLabel{{background-color:{color};color:white;padding:3px 5px 3px 5px; border-radius:3px}}')
-            self.lblAction.setText(lbl_action)
-        else:
+        # FIXME: Disable deterministic masternodes for GӀN
+        # if self.masternode:
+        #     self.lblTitle.setVisible(True)
+        #     self.lblAction.setVisible(self.edit_mode is True)
+        #     if is_deterministic:
+        #         lbl = '<span>Deterministic masternode</span>'
+        #         lbl_action = '<a href="change-to-non-dmn">Alter configuration to non-deterministic</a>'
+        #         color = '#2eb82e'
+        #     else:
+        #         lbl = '<span>Non-deterministic masternode</span>'
+        #         lbl_action = '<a href="change-to-dmn">Alter configuration to deterministic</a>'
+        #         color = 'navy'
+        #     self.lblTitle.setText(lbl)
+        #     self.lblTitle.setStyleSheet(
+        #         f'QLabel{{background-color:{color};color:white;padding:3px 5px 3px 5px; border-radius:3px}}')
+        #     self.lblAction.setText(lbl_action)
+        # else:
+        if not self.masternode:
             self.lblTitle.setVisible(False)
             self.lblAction.setVisible(False)
 
@@ -335,7 +337,7 @@ class WdgMasternodeDetails(QWidget, ui_masternode_details.Ui_WdgMasternodeDetail
             if cur_key_type == 'privkey':
                 lbl = prefix + ' private key'
             elif cur_key_type == 'address':
-                lbl = prefix + ' Dash address'
+                lbl = prefix + ' GINcoin address'
             elif cur_key_type == 'pubkey':
                 lbl = prefix + ' public key'
             elif cur_key_type == 'pubkeyhash':
@@ -357,10 +359,12 @@ class WdgMasternodeDetails(QWidget, ui_masternode_details.Ui_WdgMasternodeDetail
                 if not self.edit_mode and not self.act_view_as_owner_private_key.isChecked():
                     style = 'hl2'
             else:
-                key_type, tooltip_anchor, placeholder_text = ('address', 'privkey', 'Enter the owner Dash address')
+                key_type, tooltip_anchor, placeholder_text = ('address', 'privkey', 'Enter the owner GINcoin address')
                 if not self.edit_mode:
                     style = 'hl1' if self.act_view_as_owner_public_address.isChecked() else 'hl2'
-            self.lblOwnerKey.setText(get_label_text('Owner', key_type, tooltip_anchor, self.ag_owner_key, style))
+            # FIXME: Disable deterministic masternodes for GIN
+            # self.lblOwnerKey.setText(get_label_text('Owner', key_type, tooltip_anchor, self.ag_owner_key, style))
+            self.lblOwnerKey.setText("")
             self.edtOwnerKey.setPlaceholderText(placeholder_text)
 
             style = ''
@@ -372,8 +376,9 @@ class WdgMasternodeDetails(QWidget, ui_masternode_details.Ui_WdgMasternodeDetail
                 key_type, tooltip_anchor, placeholder_text = ('pubkey', 'privkey', 'Enter the operator public key')
                 if not self.edit_mode:
                     style = 'hl1' if self.act_view_as_operator_public_key.isChecked() else 'hl2'
-            self.lblOperatorKey.setText(get_label_text('Operator', key_type, tooltip_anchor, self.ag_operator_key,
-                                                       style))
+            # FIXME: Disable deterministic masternodes for GIN
+            # self.lblOperatorKey.setText(get_label_text('Operator', key_type, tooltip_anchor, self.ag_operator_key, style))
+            self.lblOwnerKey.setText("")
             self.edtOperatorKey.setPlaceholderText(placeholder_text)
 
             style = ''
@@ -382,10 +387,12 @@ class WdgMasternodeDetails(QWidget, ui_masternode_details.Ui_WdgMasternodeDetail
                 if not self.edit_mode and not self.act_view_as_voting_private_key.isChecked():
                     style = 'hl2'
             else:
-                key_type, tooltip_anchor, placeholder_text = ('address', 'privkey', 'Enter the voting Dash address')
+                key_type, tooltip_anchor, placeholder_text = ('address', 'privkey', 'Enter the voting GINcoin address')
                 if not self.edit_mode:
                     style = 'hl1' if self.act_view_as_voting_public_address.isChecked() else 'hl2'
-            self.lblVotingKey.setText(get_label_text('Voting', key_type, tooltip_anchor, self.ag_voting_key, style))
+            # FIXME: Disable deterministic masternodes for GIN
+            # self.lblVotingKey.setText(get_label_text('Voting', key_type, tooltip_anchor, self.ag_voting_key, style))
+            self.lblOwnerKey.setText("")
             self.edtVotingKey.setPlaceholderText(placeholder_text)
 
             self.set_left_label_width(self.get_max_left_label_width())
@@ -639,7 +646,7 @@ class WdgMasternodeDetails(QWidget, ui_masternode_details.Ui_WdgMasternodeDetail
     @pyqtSlot(str)
     def on_lblOwnerKey_linkHovered(self, link):
         if link == 'address':
-            tt = 'Change input type to Dash address'
+            tt = 'Change input type to GINcoin address'
         else:
             tt = 'Change input type to private key'
         self.lblOwnerKey.setToolTip(tt)
@@ -655,7 +662,7 @@ class WdgMasternodeDetails(QWidget, ui_masternode_details.Ui_WdgMasternodeDetail
     @pyqtSlot(str)
     def on_lblVotingKey_linkHovered(self, link):
         if link == 'address':
-            tt = 'Change input type to Dash address'
+            tt = 'Change input type to GINcoin address'
         else:
             tt = 'Change input type to private key'
         self.lblVotingKey.setToolTip(tt)
@@ -948,7 +955,7 @@ class WdgMasternodeDetails(QWidget, ui_masternode_details.Ui_WdgMasternodeDetail
     @pyqtSlot(bool)
     def on_btnGenerateMnPrivateKey_clicked(self, checked):
         if self.masternode:
-            pk = self.generate_priv_key('masternode', self.edtMasternodePrivateKey, True)
+            pk = self.generate_priv_key('masternode', self.edtMasternodePrivateKey, False)
             if pk:
                 self.masternode.privateKey = pk
                 self.btnShowMnPrivateKey.setChecked(True)
@@ -1054,14 +1061,14 @@ class WdgMasternodeDetails(QWidget, ui_masternode_details.Ui_WdgMasternodeDetail
                     apply_utxo(utxo)
         else:
             if utxos is not None:
-                WndUtils.warnMsg('Couldn\'t find any 1000 Dash UTXO in your wallet.')
+                WndUtils.warnMsg('Couldn\'t find any 1000 GIN UTXO in your wallet.')
 
     def get_collateral_tx_address_thread(self, ctrl: CtrlObject, bip44_wallet: Bip44Wallet,
                                          check_break_scanning_ext: Callable[[], bool]):
         utxos = []
         break_scanning = False
         txes_cnt = 0
-        msg = 'Scanning wallet transactions for 1000 Dash UTXOs.<br>' \
+        msg = 'Scanning wallet transactions for 1000 GIN UTXOs.<br>' \
               'This may take a while (<a href="break">break</a>)....'
         ctrl.dlg_config_fun(dlg_title="Scanning wallet", show_progress_bar=False)
         ctrl.display_msg_fun(msg)

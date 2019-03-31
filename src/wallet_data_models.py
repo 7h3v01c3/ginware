@@ -380,9 +380,9 @@ class AccountListModel(ExtSortFilterTableModel):
 class UtxoTableModel(ExtSortFilterTableModel):
     def __init__(self, parent, masternode_list: List[MasternodeConfig], tx_explorer_url: str):
         ExtSortFilterTableModel.__init__(self, parent, [
-            TableModelColumn('satoshis', 'Amount (Dash)', True, 100),
+            TableModelColumn('satoshis', 'Amount (GIN)', True, 100),
             TableModelColumn('confirmations', 'Confirmations', True, 100),
-            TableModelColumn('bip32_path', 'Path', True, 100),
+            TableModelColumn('bip32_path', 'Path', False, 100),
             TableModelColumn('time_str', 'TX Date/Time', True, 140),
             TableModelColumn('address', 'Address', True, 140),
             TableModelColumn('masternode', 'Masternode', False, 40),
@@ -441,6 +441,8 @@ class UtxoTableModel(ExtSortFilterTableModel):
                             elif field_name == 'confirmations':
                                 if utxo.block_height >= UNCONFIRMED_TX_BLOCK_HEIGHT:
                                     return 'Unconfirmed'
+                                elif utxo.coinbase_locked:
+                                    return app_utils.to_string(utxo.__getattribute__(field_name)) + '/100'
                                 else:
                                     return app_utils.to_string(utxo.__getattribute__(field_name))
                             elif field_name == 'address':
@@ -460,8 +462,10 @@ class UtxoTableModel(ExtSortFilterTableModel):
                     elif role == Qt.ForegroundRole:
                         if utxo.is_collateral:
                             return QColor(Qt.white)
-                        elif utxo.coinbase_locked or utxo.block_height >= UNCONFIRMED_TX_BLOCK_HEIGHT:
+                        elif utxo.block_height >= UNCONFIRMED_TX_BLOCK_HEIGHT:
                             return QColor('red')
+                        elif utxo.coinbase_locked:
+                            return QColor('green')
 
                     elif role == Qt.BackgroundRole:
                         if utxo.is_collateral:
@@ -595,15 +599,15 @@ class UtxoTableModel(ExtSortFilterTableModel):
 class TransactionTableModel(ExtSortFilterTableModel):
     def __init__(self, parent, tx_explorer_url: str):
         ExtSortFilterTableModel.__init__(self, parent, [
-            TableModelColumn('direction', 'Direction', True, 50),
+            TableModelColumn('direction', 'Direction', True, 80),
             TableModelColumn('satoshis', 'Amount', True, 100),
             TableModelColumn('block_time_str', 'Date', True, 100),
-            TableModelColumn('block_height', 'Height', True, 100),
+            TableModelColumn('block_height', 'Height', False, 60),
             TableModelColumn('confirmations', 'Confirmations', True, 100),
             TableModelColumn('senders', 'Sender', True, 100),
             TableModelColumn('recipient', 'Recipient', True, 100),
             TableModelColumn('tx_hash', 'TX Hash', False, 100),
-            TableModelColumn('is_coinbase', 'Coinbase TX', True, 100),
+            TableModelColumn('is_coinbase', 'Coinbase TX', False, 100),
             TableModelColumn('label', 'Comment', True, 100)
         ], True, True)
         if DEBUG_MODE:

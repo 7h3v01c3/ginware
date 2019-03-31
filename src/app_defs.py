@@ -6,10 +6,10 @@ import collections
 import logging
 from typing import List
 
-APP_NAME_SHORT = 'DashMasternodeTool'
-APP_NAME_LONG = 'Dash Masternode Tool'
-APP_DATA_DIR_NAME = '.dmt'
-PROJECT_URL = 'https://github.com/Bertrand256/dash-masternode-tool'
+APP_NAME_SHORT = 'GINware'
+APP_NAME_LONG = 'GINware'
+APP_DATA_DIR_NAME = '.ginware'
+PROJECT_URL = 'https://github.com/GIN-coin/ginware'
 FEE_DUFF_PER_BYTE = 1
 MIN_TX_FEE = 1000
 SCREENSHOT_MODE = False

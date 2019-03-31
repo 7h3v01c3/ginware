@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>906</width>
+    <width>955</width>
     <height>499</height>
    </rect>
   </property>
@@ -75,7 +75,7 @@
         <number>12</number>
        </property>
        <item>
-        <layout class="QHBoxLayout" name="layMasternodesControl" stretch="0,3,0,0,0,0,0,0">
+        <layout class="QHBoxLayout" name="layMasternodesControl" stretch="0,3,0,0,0,0,0,0,0">
          <property name="spacing">
           <number>8</number>
          </property>
@@ -220,7 +220,17 @@
          <item>
           <widget class="QPushButton" name="btnCancelEditingMn">
            <property name="text">
-            <string>Cancel editing</string>
+            <string>Cancel edit</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QPushButton" name="btnSignMessageForCurrMn">
+           <property name="toolTip">
+            <string>Sign message for the current masternode.</string>
+           </property>
+           <property name="text">
+            <string>Sign</string>
            </property>
           </widget>
          </item>
@@ -249,7 +259,7 @@
          </property>
          <layout class="QVBoxLayout" name="verticalLayout_3">
           <property name="spacing">
-           <number>-1</number>
+           <number>6</number>
           </property>
           <property name="leftMargin">
            <number>12</number>
@@ -266,7 +276,7 @@
           <item>
            <layout class="QHBoxLayout" name="horizontalLayout" stretch="0,1,0">
             <property name="spacing">
-             <number>-1</number>
+             <number>6</number>
             </property>
             <item>
              <widget class="QLabel" name="lblMasternodeStatus">
@@ -318,7 +328,7 @@
                </sizepolicy>
               </property>
               <property name="toolTip">
-               <string>Get Masternode's status</string>
+               <string>Retrieve this masternode's latest network statistics.</string>
               </property>
               <property name="text">
                <string>Get status</string>
@@ -333,7 +343,7 @@
        <item>
         <layout class="QHBoxLayout" name="horizontalLayout_2">
          <property name="spacing">
-          <number>-1</number>
+          <number>6</number>
          </property>
          <item>
           <spacer name="horizontalSpacer_2">
@@ -369,13 +379,13 @@
             </size>
            </property>
            <property name="toolTip">
-            <string>Broadcast information about the Masternode</string>
+            <string>Broadcast a message across the GIN network to start your masternode, from your hardware wallet.</string>
            </property>
            <property name="styleSheet">
             <string notr="true"/>
            </property>
            <property name="text">
-            <string>Start Masternode using hardware wallet</string>
+            <string> Start masternode with hardware wallet </string>
            </property>
           </widget>
          </item>
@@ -428,34 +438,25 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>906</width>
-     <height>22</height>
+     <width>955</width>
+     <height>21</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuTools">
     <property name="title">
      <string>Tools</string>
     </property>
-    <widget class="QMenu" name="menuClear">
-     <property name="title">
-      <string>Clear</string>
-     </property>
-     <addaction name="action_clear_wallet_cache"/>
-     <addaction name="action_clear_proposals_cache"/>
-    </widget>
-    <addaction name="action_transfer_funds_for_any_address"/>
+    <addaction name="action_import_masternode_conf"/>
     <addaction name="separator"/>
-    <addaction name="action_sign_message_for_cur_mn"/>
     <addaction name="action_hw_configuration"/>
     <addaction name="action_hw_initialization_recovery"/>
     <addaction name="separator"/>
-    <addaction name="action_import_masternode_conf"/>
+    <addaction name="action_clear_wallet_cache"/>
     <addaction name="separator"/>
-    <addaction name="action_check_for_updates"/>
-    <addaction name="action_command_console"/>
     <addaction name="action_open_log_file"/>
     <addaction name="action_open_data_folder"/>
-    <addaction name="menuClear"/>
+    <addaction name="separator"/>
+    <addaction name="action_command_console"/>
    </widget>
    <widget class="QMenu" name="menuFile">
     <property name="title">
@@ -463,7 +464,7 @@
     </property>
     <widget class="QMenu" name="action_open_recent_files">
      <property name="title">
-      <string>Recent Configuration Files</string>
+      <string>Recent config files</string>
      </property>
     </widget>
     <addaction name="action_load_config_file"/>
@@ -472,19 +473,38 @@
     <addaction name="action_save_config_file_as"/>
     <addaction name="separator"/>
     <addaction name="action_open_settings_window"/>
+   </widget>
+   <widget class="QMenu" name="menuHelp">
+    <property name="title">
+     <string>Help</string>
+    </property>
+    <addaction name="action_check_for_updates"/>
     <addaction name="separator"/>
     <addaction name="action_about_app"/>
     <addaction name="action_about_qt"/>
    </widget>
    <addaction name="menuFile"/>
    <addaction name="menuTools"/>
+   <addaction name="menuHelp"/>
   </widget>
   <widget class="QToolBar" name="toolBar">
+   <property name="sizePolicy">
+    <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+     <horstretch>0</horstretch>
+     <verstretch>0</verstretch>
+    </sizepolicy>
+   </property>
    <property name="windowTitle">
     <string>toolBar</string>
    </property>
+   <property name="iconSize">
+    <size>
+     <width>56</width>
+     <height>24</height>
+    </size>
+   </property>
    <property name="toolButtonStyle">
-    <enum>Qt::ToolButtonIconOnly</enum>
+    <enum>Qt::ToolButtonTextUnderIcon</enum>
    </property>
    <property name="floatable">
     <bool>false</bool>
@@ -495,19 +515,18 @@
    <attribute name="toolBarBreak">
     <bool>false</bool>
    </attribute>
-   <addaction name="action_open_settings_window"/>
    <addaction name="action_save_config_file"/>
+   <addaction name="separator"/>
+   <addaction name="action_transfer_funds_for_any_address"/>
+   <addaction name="separator"/>
+   <addaction name="action_see_all_masternodes"/>
    <addaction name="separator"/>
    <addaction name="action_check_network_connection"/>
    <addaction name="separator"/>
-   <addaction name="action_run_trezor_emulator"/>
    <addaction name="action_test_hw_connection"/>
    <addaction name="action_disconnect_hw"/>
    <addaction name="separator"/>
-   <addaction name="action_open_proposals_window"/>
-   <addaction name="separator"/>
-   <addaction name="action_transfer_funds_for_any_address"/>
-   <addaction name="action_sign_message_for_cur_mn"/>
+   <addaction name="action_open_settings_window"/>
   </widget>
   <action name="action_transfer_funds_for_cur_mn">
    <property name="text">
@@ -521,22 +540,48 @@
   </action>
   <action name="action_transfer_funds_for_any_address">
    <property name="text">
-    <string>Transfer Funds / Wallet</string>
+    <string>Wallet</string>
+   </property>
+   <property name="toolTip">
+    <string>Transfer and receive coins.</string>
    </property>
   </action>
   <action name="action_sign_message_for_cur_mn">
    <property name="text">
-    <string>Sign Message for Current Masternode...</string>
+    <string>Sign</string>
+   </property>
+   <property name="iconText">
+    <string>Sign</string>
+   </property>
+   <property name="toolTip">
+    <string>Sign message for the current masternode.</string>
+   </property>
+  </action>
+  <action name="action_see_all_masternodes">
+   <property name="text">
+    <string>Masternodes</string>
+   </property>
+   <property name="iconText">
+    <string>Masternodes</string>
+   </property>
+   <property name="toolTip">
+    <string>See your masternodes, as well as other masternodes on the network.</string>
    </property>
   </action>
   <action name="action_hw_configuration">
    <property name="text">
-    <string>Hardware Wallet PIN/passphrase Configuration...</string>
+    <string>Hardware wallet PIN/passphrase configuration...</string>
+   </property>
+   <property name="iconText">
+    <string>Hardware wallet PIN/passphrase configuration</string>
+   </property>
+   <property name="visible">
+    <bool>false</bool>
    </property>
   </action>
   <action name="action_load_config_file">
    <property name="text">
-    <string>Open Configuration File...</string>
+    <string>Open config file...</string>
    </property>
    <property name="toolTip">
     <string>Open configuration file</string>
@@ -544,20 +589,23 @@
   </action>
   <action name="action_save_config_file_as">
    <property name="text">
-    <string>Save Configuration As...</string>
+    <string>Save config as...</string>
    </property>
   </action>
   <action name="action_save_config_file">
    <property name="text">
-    <string>Save Configuration</string>
+    <string>Save</string>
+   </property>
+   <property name="toolTip">
+    <string>Save the current configuration.</string>
    </property>
   </action>
   <action name="action_check_network_connection">
    <property name="text">
-    <string>Check Network Connection</string>
+    <string>Connect</string>
    </property>
    <property name="toolTip">
-    <string>Check Dash Network Connection</string>
+    <string>Check connection with GINcoin network.</string>
    </property>
   </action>
   <action name="action_open_settings_window">
@@ -581,27 +629,36 @@
   </action>
   <action name="action_test_hw_connection">
    <property name="text">
-    <string>Test Hardware Wallet Connection</string>
+    <string>Detect</string>
+   </property>
+   <property name="toolTip">
+    <string>Establish connection with hardware wallet.</string>
    </property>
   </action>
   <action name="action_disconnect_hw">
    <property name="text">
-    <string>Disconnect Hardware Wallet</string>
+    <string>Disconnect</string>
+   </property>
+   <property name="toolTip">
+    <string>Disconnect hardware wallet.</string>
    </property>
   </action>
   <action name="action_hw_initialization_recovery">
    <property name="text">
-    <string>Hardware Wallet Initialization/Recovery...</string>
+    <string>Hardware wallet initialization/recovery...</string>
+   </property>
+   <property name="visible">
+    <bool>false</bool>
    </property>
   </action>
   <action name="action_check_for_updates">
    <property name="text">
-    <string>Check For Updates</string>
+    <string>Check for updates</string>
    </property>
   </action>
   <action name="action_open_log_file">
    <property name="text">
-    <string>Open Log File</string>
+    <string>Open log file</string>
    </property>
    <property name="shortcut">
     <string>Meta+Alt+L</string>
@@ -609,7 +666,10 @@
   </action>
   <action name="action_about_app">
    <property name="text">
-    <string>About DashMasternodeTool...</string>
+    <string>About GINware...</string>
+   </property>
+   <property name="toolTip">
+    <string>About GINware</string>
    </property>
    <property name="menuRole">
     <enum>QAction::AboutRole</enum>
@@ -617,7 +677,7 @@
   </action>
   <action name="action_import_masternode_conf">
    <property name="text">
-    <string>Import masternodes from the masternode.conf file...</string>
+    <string>Import masternodes from a 'masternode.conf' file...</string>
    </property>
   </action>
   <action name="action_about_qt">
@@ -652,7 +712,7 @@
   </action>
   <action name="action_command_console">
    <property name="text">
-    <string>Command Console</string>
+    <string>Command console</string>
    </property>
    <property name="shortcut">
     <string>Meta+Alt+C</string>
@@ -668,12 +728,12 @@
   </action>
   <action name="action_open_data_folder">
    <property name="text">
-    <string>Open Application Data Folder</string>
+    <string>Open GINware data folder</string>
    </property>
   </action>
   <action name="action_clear_wallet_cache">
    <property name="text">
-    <string>Wallet Cache</string>
+    <string>Clear wallet cache</string>
    </property>
   </action>
   <action name="action_clear_proposals_cache">

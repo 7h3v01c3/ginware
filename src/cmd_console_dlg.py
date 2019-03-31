@@ -13,6 +13,7 @@ from wnd_utils import WndUtils
 import logging
 import app_cache
 from app_defs import get_known_loggers, DEFAULT_LOG_FORMAT
+from hw_intf import hw_app_install, hw_app_uninstall
 
 
 class CmdConsoleDlg(QDialog, ui_cmd_console_dlg.Ui_CmdConsoleDlg):
@@ -95,7 +96,7 @@ class CmdConsoleDlg(QDialog, ui_cmd_console_dlg.Ui_CmdConsoleDlg):
             newl = ''
         else:
             newl = '<br>'
-        self.message(newl + '&gt; <b>' + command + '</b><br>', 'green')
+        self.message(newl + '&gt; <b>' + command + '</b>', 'green')
         ok = False
 
         match = re.search(r"\s*([A-Za-z0-9]+)\s*(.*)", command)
@@ -167,6 +168,22 @@ class CmdConsoleDlg(QDialog, ui_cmd_console_dlg.Ui_CmdConsoleDlg):
                     ok = self.rpc_command(match.group(1))
             else:
                 self.error('Missing the RPC command name')
+
+        elif cmd == 'install' or cmd == 'uninstall':
+            device = {"valid": False}
+            ok = True
+            if re.match(r"^nanos$", args, re.IGNORECASE):
+                device = {"valid": True, "name": "nanos"}
+            elif re.match(r"^nanos(?:\s+)?testnet$", args, re.IGNORECASE):
+                device = {"valid": True, "name": "nanos", "testnet": True}
+
+            if cmd == 'install':
+                (result, msg) = self.load(device)
+            else:
+                (result, msg) = self.unload(device)
+            if   result == 0: self.message(msg)
+            elif result == 1: self.error(msg + ": " + cmd)
+            else:             self.error(msg)
 
         else:
             self.error('Invalid command: ' + cmd)
@@ -305,8 +322,20 @@ class CmdConsoleDlg(QDialog, ui_cmd_console_dlg.Ui_CmdConsoleDlg):
             self.message(ret, style="white-space: pre-wrap;")
             return True
         else:
-            WndUtils.errorMsg('Not connected to a Dash node')
+            WndUtils.errorMsg('Not connected to a GINcoin node')
             return False
+
+    def load(self, device: dict):
+        if device['valid']:
+            return hw_app_install(self.main_dlg.hw_session, device['name'], device.get('testnet'))
+        else:
+            return (1, 'Invalid command')
+
+    def unload(self, device: dict):
+        if device['valid']:
+            return hw_app_uninstall(self.main_dlg.hw_session, device['name'], device.get('testnet'))
+        else:
+            return (1, 'Invalid command')
 
     @pyqtSlot()
     def on_buttonBox_accepted(self):

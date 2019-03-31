@@ -113,7 +113,7 @@ class AppConfig(object):
 
         # to distribute the load evenly over "public" RPC services, we choose radom connection (from enabled ones)
         # if it is set to False, connections will be used accoording to its order in dash_net_configs list
-        self.random_dash_net_config = True
+        self.random_dash_net_config = False
 
         # list of all enabled dashd configurations (DashNetworkConnectionCfg) - they will be used accourding to
         # the order in list
@@ -138,14 +138,17 @@ class AppConfig(object):
 
         self.dash_network = 'MAINNET'
 
-        self.block_explorer_tx_mainnet = 'https://insight.dash.org/insight/tx/%TXID%'
-        self.block_explorer_addr_mainnet = 'https://insight.dash.org/insight/address/%ADDRESS%'
-        self.block_explorer_tx_testnet = 'https://testnet-insight.dashevo.org/insight/tx/%TXID%'
-        self.block_explorer_addr_testnet = 'https://testnet-insight.dashevo.org/insight/address/%ADDRESS%'
-        self.tx_api_url_mainnet = 'https://insight.dash.org/insight'
-        self.tx_api_url_testnet = 'https://testnet-insight.dashevo.org/insight'
-        self.dash_central_proposal_api = 'https://www.dashcentral.org/api/v1/proposal?hash=%HASH%'
-        self.dash_nexus_proposal_api = 'https://api.dashnexus.org/proposals/%HASH%'
+        self.block_explorer_tx_mainnet = 'https://explorer.gincoin.io/tx/%TXID%'
+        self.block_explorer_addr_mainnet = 'https://explorer.gincoin.io/address/%ADDRESS%'
+        self.block_explorer_tx_testnet = 'https://explorer.testnet.gincoin.io/tx/%TXID%'
+        self.block_explorer_addr_testnet = 'https://explorer.testnet.gincoin.io/address/%ADDRESS%'
+        self.tx_api_url_mainnet = 'https://explorer.gincoin.io'
+        self.tx_api_url_testnet = 'https://explorer.testnet.gincoin.io'
+        # FIXME: Disable governance for GINcoin
+        # self.dash_central_proposal_api = 'https://www.dashcentral.org/api/v1/proposal?hash=%HASH%'
+        # self.dash_nexus_proposal_api = 'https://api.dashnexus.org/proposals/%HASH%'
+        self.dash_central_proposal_api = ''
+        self.dash_nexus_proposal_api = ''
 
         # public RPC connection configurations
         self.public_conns_mainnet: Dict[str, DashNetworkConnectionCfg] = {}
@@ -253,7 +256,7 @@ class AppConfig(object):
 
         # setup logging
         self.log_dir = os.path.join(app_user_dir, 'logs')
-        self.log_file = os.path.join(self.log_dir, 'dmt.log')
+        self.log_file = os.path.join(self.log_dir, 'ginware.log')
         if not os.path.exists(self.log_dir):
             os.makedirs(self.log_dir)
 
@@ -396,12 +399,13 @@ class AppConfig(object):
         if not file_name:
             file_name = self.app_config_file_name
 
+        # Not necessary for GӀN
         # from v0.9.15 some public nodes changed its names and port numbers to the official HTTPS port number: 443
         # correct the configuration
-        if not self.app_last_version or app_utils.is_version_bigger('0.9.22-hotfix4', self.app_last_version):
-            correct_public_nodes = True
-        else:
-            correct_public_nodes = False
+        # if not self.app_last_version or app_utils.is_version_bigger('0.9.22-hotfix4', self.app_last_version):
+        #     correct_public_nodes = True
+        # else:
+        correct_public_nodes = False
         configuration_corrected = False
         errors_while_reading = False
         hw_type_sav = self.hw_type
@@ -466,7 +470,7 @@ class AppConfig(object):
                 self.dash_network = dash_network
 
                 if self.is_mainnet():
-                    def_bip32_path = "44'/5'/0'/0/0"
+                    def_bip32_path = "44'/2000'/0'/0/0"
                 else:
                     def_bip32_path = "44'/1'/0'/0/0"
                 self.last_bip32_base_path = config.get(section, 'bip32_base_path', fallback=def_bip32_path)
@@ -488,16 +492,15 @@ class AppConfig(object):
                                                                             fallback='1'))
                 self.check_for_updates = self.value_to_bool(config.get(section, 'check_for_updates', fallback='1'))
                 self.backup_config_file = self.value_to_bool(config.get(section, 'backup_config_file', fallback='1'))
-                self.read_proposals_external_attributes = \
-                    self.value_to_bool(config.get(section, 'read_external_proposal_attributes', fallback='1'))
-                self.dont_use_file_dialogs = self.value_to_bool(config.get(section, 'dont_use_file_dialogs',
-                                                                          fallback='0'))
-                self.confirm_when_voting = self.value_to_bool(config.get(section, 'confirm_when_voting',
-                                                                          fallback='1'))
-                self.add_random_offset_to_vote_time = \
-                    self.value_to_bool(config.get(section, 'add_random_offset_to_vote_time', fallback='1'))
+                self.dont_use_file_dialogs = self.value_to_bool(config.get(section, 'dont_use_file_dialogs', fallback='0'))
                 self.encrypt_config_file = \
                     self.value_to_bool(config.get(section, 'encrypt_config_file', fallback='0'))
+                # FIXME: Disable governance for GIN, fallback to 0
+                self.read_proposals_external_attributes = \
+                    self.value_to_bool(config.get(section, 'read_external_proposal_attributes', fallback='0'))
+                self.confirm_when_voting = self.value_to_bool(config.get(section, 'confirm_when_voting', fallback='0'))
+                self.add_random_offset_to_vote_time = \
+                    self.value_to_bool(config.get(section, 'add_random_offset_to_vote_time', fallback='0'))
 
                 # with ini ver 3 we changed the connection password encryption scheme, so connections in new ini
                 # file will be saved under different section names - with this we want to disallow the old app
@@ -730,7 +733,7 @@ class AppConfig(object):
         config.set(section, 'log_level', self.log_level_str)
         config.set(section, 'dash_network', self.dash_network)
         if not self.hw_type:
-            self.hw_type = HWType.trezor
+            self.hw_type = HWType.ledger_nano_s
         config.set(section, 'hw_type', self.hw_type)
         config.set(section, 'hw_keepkey_psw_encoding', self.hw_keepkey_psw_encoding)
         config.set(section, 'bip32_base_path', self.last_bip32_base_path)
@@ -738,10 +741,11 @@ class AppConfig(object):
         config.set(section, 'check_for_updates', '1' if self.check_for_updates else '0')
         config.set(section, 'backup_config_file', '1' if self.backup_config_file else '0')
         config.set(section, 'dont_use_file_dialogs', '1' if self.dont_use_file_dialogs else '0')
-        config.set(section, 'read_external_proposal_attributes',
-                   '1' if self.read_proposals_external_attributes else '0')
-        config.set(section, 'confirm_when_voting', '1' if self.confirm_when_voting else '0')
-        config.set(section, 'add_random_offset_to_vote_time', '1' if self.add_random_offset_to_vote_time else '0')
+        # INFO: Disable governance for GIN
+        # config.set(section, 'read_external_proposal_attributes',
+        #            '1' if self.read_proposals_external_attributes else '0')
+        # config.set(section, 'confirm_when_voting', '1' if self.confirm_when_voting else '0')
+        # config.set(section, 'add_random_offset_to_vote_time', '1' if self.add_random_offset_to_vote_time else '0')
         config.set(section, 'encrypt_config_file', '1' if self.encrypt_config_file else '0')
 
         # save mn configuration
@@ -761,17 +765,18 @@ class AppConfig(object):
             config.set(section, 'use_default_protocol_version', '1' if mn.use_default_protocol_version else '0')
             config.set(section, 'protocol_version', str(mn.protocol_version))
             config.set(section, 'is_deterministic', '1' if mn.is_deterministic else '0')
-            config.set(section, 'dmn_user_roles', str(mn.dmn_user_roles))
-            config.set(section, 'dmn_tx_hash', mn.dmn_tx_hash)
-            config.set(section, 'dmn_owner_private_key', self.simple_encrypt(mn.dmn_owner_private_key))
-            config.set(section, 'dmn_operator_private_key', self.simple_encrypt(mn.dmn_operator_private_key))
-            config.set(section, 'dmn_voting_private_key', self.simple_encrypt(mn.dmn_voting_private_key))
-            config.set(section, 'dmn_owner_key_type', str(mn.dmn_owner_key_type))
-            config.set(section, 'dmn_operator_key_type', str(mn.dmn_operator_key_type))
-            config.set(section, 'dmn_voting_key_type', str(mn.dmn_voting_key_type))
-            config.set(section, 'dmn_owner_address', mn.dmn_owner_address)
-            config.set(section, 'dmn_operator_public_key', mn.dmn_operator_public_key)
-            config.set(section, 'dmn_voting_address', mn.dmn_voting_address)
+            # FIXME: Disable deterministic masternodes for GIN
+            # config.set(section, 'dmn_user_roles', str(mn.dmn_user_roles))
+            # config.set(section, 'dmn_tx_hash', mn.dmn_tx_hash)
+            # config.set(section, 'dmn_owner_private_key', self.simple_encrypt(mn.dmn_owner_private_key))
+            # config.set(section, 'dmn_operator_private_key', self.simple_encrypt(mn.dmn_operator_private_key))
+            # config.set(section, 'dmn_voting_private_key', self.simple_encrypt(mn.dmn_voting_private_key))
+            # config.set(section, 'dmn_owner_key_type', str(mn.dmn_owner_key_type))
+            # config.set(section, 'dmn_operator_key_type', str(mn.dmn_operator_key_type))
+            # config.set(section, 'dmn_voting_key_type', str(mn.dmn_voting_key_type))
+            # config.set(section, 'dmn_owner_address', mn.dmn_owner_address)
+            # config.set(section, 'dmn_operator_public_key', mn.dmn_operator_public_key)
+            # config.set(section, 'dmn_voting_address', mn.dmn_voting_address)
             mn.modified = False
 
         # save dash network connections
@@ -902,7 +907,7 @@ class AppConfig(object):
     def get_default_protocol(self) -> int:
         prot = None
         if self._remote_app_params:
-            dp = self._remote_app_params.get('defaultDashdProtocol')
+            dp = self._remote_app_params.get('defaultProtocol')
             if dp:
                 prot = dp.get(self.dash_network.lower())
         return prot
@@ -1221,9 +1226,9 @@ class AppConfig(object):
     @property
     def hw_coin_name(self):
         if self.is_testnet():
-            return 'Dash Testnet'
+            return 'Gincoin Testnet'
         else:
-            return 'Dash'
+            return 'Gincoin'
 
     def get_block_explorer_tx(self):
         if self.dash_network == 'MAINNET':
@@ -1302,7 +1307,7 @@ class MasternodeConfig:
     def __init__(self):
         self.name = ''
         self.__ip = ''
-        self.__port = '9999'
+        self.__port = '10111'
         self.__privateKey = ''
         self.__collateralBip32Path = ''
         self.__collateralAddress = ''

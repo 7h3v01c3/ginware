@@ -52,7 +52,7 @@ class ThreadFunDlg(QtWidgets.QDialog, ui_thread_fun_dlg.Ui_ThreadFunDlg):
     # signal to configure dialog, args: (bool) show message text (default True), (bool) show progress bar,
     # (int) window maximum width
     # (default false):
-    dlg_config_signal = QtCore.pyqtSignal(object, object, object, object)
+    dlg_config_signal = QtCore.pyqtSignal(object, object, object, object, object, object)
 
     def __init__(self, worker_fun, worker_args, close_after_finish=True, buttons=None, title='', text=None,
                  center_by_window=None,
@@ -99,14 +99,15 @@ class ThreadFunDlg(QtWidgets.QDialog, ui_thread_fun_dlg.Ui_ThreadFunDlg):
         self.text = text
         self.show_window_delay_ms = show_window_delay_ms
         self.max_width = None
+        self.min_width = None
         self.worker_thread: 'WorkerDlgThread' = None
         self.center_by_window = center_by_window
         self.setupUi()
 
     def setupUi(self):
         ui_thread_fun_dlg.Ui_ThreadFunDlg.setupUi(self, self)
-        self.setWindowFlags(self.windowFlags() | Qt.CustomizeWindowHint)
-        # self.setWindowFlags(self.windowFlags() & ~Qt.WindowCloseButtonHint)
+        # self.setWindowFlags(self.windowFlags() | Qt.CustomizeWindowHint)
+        self.setWindowFlags(self.windowFlags() & ~Qt.WindowCloseButtonHint & ~Qt.WindowContextHelpButtonHint)
         self.setWindowTitle(self.title)
         self.display_msg_signal.connect(self.setText)
         self.dlg_config_signal.connect(self.onConfigureDialog)
@@ -173,7 +174,8 @@ class ThreadFunDlg(QtWidgets.QDialog, ui_thread_fun_dlg.Ui_ThreadFunDlg):
         # width = self.lblText.fontMetrics().boundingRect(text).width()
         # if self.max_width and width > self.max_width:
         #     width = self.max_width
-        # self.lblText.setFixedWidth(width)
+        if self.min_width:
+            self.lblText.setMinimumWidth(self.min_width)
 
         QtWidgets.qApp.processEvents(QEventLoop.ExcludeUserInputEvents)
         self.centerByWindow(self.center_by_window)
@@ -200,7 +202,7 @@ class ThreadFunDlg(QtWidgets.QDialog, ui_thread_fun_dlg.Ui_ThreadFunDlg):
             pg.setY( pg.y() + int((size_diff.y())))
             self.move(pg)
 
-    def onConfigureDialog(self, show_message=None, show_progress_bar=None, dlg_title=None, max_width=None):
+    def onConfigureDialog(self, show_message=None, show_progress_bar=None, dlg_title=None, max_width=None, min_width=None, centred=True):
         """
         Configure visibility of this dialog's elements. This method can be called from inside a thread by calling
         signal dlg_config_signal passed inside control dicttionary.
@@ -218,6 +220,10 @@ class ThreadFunDlg(QtWidgets.QDialog, ui_thread_fun_dlg.Ui_ThreadFunDlg):
             self.lblText.setWordWrap(True)
         else:
             self.lblText.setWordWrap(False)
+        if min_width is not None:
+            self.min_width = min_width
+        if centred:
+            self.lblText.setAlignment(QtCore.Qt.AlignHCenter)
 
     def setWorkerResults(self, result, exception):
         self.worker_result = result
@@ -342,14 +348,14 @@ class WorkerDlgThread(QThread):
         """
         self.set_progress_value_signal.emit(value)
 
-    def dlg_config(self, show_message=None, show_progress_bar=None, dlg_title=None, max_width=None):
+    def dlg_config(self, show_message=None, show_progress_bar=None, dlg_title=None, max_width=None, min_width=None, centred=True):
         """
         Called from a thread function: configures dialog by sending a dediacted signal to a dialog class.
         :param show_message: True if dialog's text area is to be shown.
         :param show_progress_bar: True if dialog's progress bar is to be shown.
         :param dlg_title: New text to show on dialogs title bar.
         """
-        self.dlg_config_signal.emit(show_message, show_progress_bar, dlg_title, max_width)
+        self.dlg_config_signal.emit(show_message, show_progress_bar, dlg_title, max_width, min_width, centred)
 
     def show_dialog(self, show: bool):
         self.show_dialog_signal.emit(show)

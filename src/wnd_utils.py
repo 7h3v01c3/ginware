@@ -52,6 +52,7 @@ class WndUtils:
             message = '<html style="font-weight:normal">' + message.replace('\n', '<br>') + '</html>'
 
         msg.setText(message)
+        msg.setWindowTitle('GINware')
         return msg.exec_()
 
     @staticmethod
@@ -91,6 +92,7 @@ class WndUtils:
                 message = '<html style="font-weight:normal">' + message.replace('\n', '<br>') + '</html>'
 
             msg.setText(message)
+            msg.setWindowTitle('GINware')
             msg.setStandardButtons(buttons)
             msg.setDefaultButton(default_button)
             return msg.exec_()
@@ -209,31 +211,32 @@ class WndUtils:
     def setIcon(self, widget, ico, rotate=0, force_color_change:str=None):
         if isinstance(ico, str):
             icon = QIcon()
-            if app_defs.APP_IMAGE_DIR:
-                path = app_defs.APP_IMAGE_DIR
-            else:
-                path = 'img'
+            if not ico == '':
+                if app_defs.APP_IMAGE_DIR:
+                    path = app_defs.APP_IMAGE_DIR
+                else:
+                    path = 'img'
 
-            path = os.path.join(path, ico)
-            if not os.path.isfile(path):
-                logging.warning(f'File {path} does not exist or is not a file')
+                path = os.path.join(path, ico)
+                if not os.path.isfile(path):
+                    logging.warning(f'File {path} does not exist or is not a file')
 
-            pixmap = QPixmap(path)
-            if rotate:
-                transf = QTransform().rotate(rotate)
-                pixmap = QPixmap(pixmap.transformed(transf))
+                pixmap = QPixmap(path)
+                if rotate:
+                    transf = QTransform().rotate(rotate)
+                    pixmap = QPixmap(pixmap.transformed(transf))
 
-            if force_color_change:
-                tmp = pixmap.toImage()
-                color = QColor(force_color_change)
-                for y in range(0, tmp.height()):
-                    for x in range(0, tmp.width()):
-                        color.setAlpha(tmp.pixelColor(x,y).alpha())
-                        tmp.setPixelColor(x, y, color)
+                if force_color_change:
+                    tmp = pixmap.toImage()
+                    color = QColor(force_color_change)
+                    for y in range(0, tmp.height()):
+                        for x in range(0, tmp.width()):
+                            color.setAlpha(tmp.pixelColor(x,y).alpha())
+                            tmp.setPixelColor(x, y, color)
 
-                pixmap = QPixmap.fromImage(tmp)
+                    pixmap = QPixmap.fromImage(tmp)
 
-            icon.addPixmap(pixmap)
+                icon.addPixmap(pixmap)
         else:
             icon = self.style().standardIcon(ico)
 

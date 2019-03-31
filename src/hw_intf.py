@@ -23,7 +23,9 @@ from wnd_utils import WndUtils
 
 DEFAULT_HW_BUSY_MESSAGE = '<b>Complete the action on your hardware wallet device</b>'
 DEFAULT_HW_BUSY_TITLE = 'Please confirm'
-
+WAIT_HW_VERIFY_MESSAGE = '<b>Communicating with your hardware wallet...</b>'
+WAIT_HW_VERIFY_TITLE = 'Please wait'
+CHECK_HW_TITLE = "Check your hardware wallet"
 
 # Dict[str <hd tree ident>, Dict[str <bip32 path>, Tuple[str <address>, int <db id>]]]
 bip32_address_map: Dict[str, Dict[str, Tuple[str, int]]] = {}
@@ -46,9 +48,9 @@ def control_trezor_keepkey_libs(connecting_to_hw):
 
 def control_hw_call(func):
     """
-    Decorator for some of the hardware wallet functions. It ensures, that hw client connection is open (and if is not, 
-    it makes attempt to open it). The s econt thing is to catch OSError exception as a result of disconnecting 
-    hw cable. After this, connection has to be closed and opened again, otherwise 'read error' occurrs. 
+    Decorator for some of the hardware wallet functions. It ensures, that hw client connection is open (and if is not,
+    it makes attempt to open it). The s econt thing is to catch OSError exception as a result of disconnecting
+    hw cable. After this, connection has to be closed and opened again, otherwise 'read error' occurrs.
     :param func: function decorated. First argument of the function has to be the reference to the MainWindow object.
     """
     def catch_hw_client(*args, **kwargs):
@@ -272,8 +274,10 @@ def cancel_hw_operation(hw_client):
 
 def get_hw_label(hw_client):
     hw_type = get_hw_type(hw_client)
-    if hw_type in (HWType.trezor, HWType.keepkey):
-        return hw_client.features.label
+    if hw_type == HWType.trezor:
+        return 'Trezor (' + hw_client.features.label + ')'
+    elif hw_type == HWType.keepkey:
+        return 'KeepKey (' + hw_client.features.label + ')'
     elif hw_type == HWType.ledger_nano_s:
         return 'Ledger Nano S'
 
@@ -306,27 +310,22 @@ def sign_tx(hw_session: HwSessionInfo, utxos_to_spend: List[UtxoType],
     :return: tuple (serialized tx, total transaction amount in satoshis)
     """
     def sign(ctrl):
-        ctrl.dlg_config_fun(dlg_title="Confirm transaction signing.", show_progress_bar=False)
-        ctrl.display_msg_fun('<b>Click the confirmation button on your hardware wallet<br>'
-                             'and wait for the transaction to be signed...</b>')
-
-        if hw_session.app_config.hw_type == HWType.trezor:
-            import hw_intf_trezor as trezor
-
-            return trezor.sign_tx(hw_session, utxos_to_spend, tx_outputs, tx_fee)
-
-        elif hw_session.app_config.hw_type == HWType.keepkey:
-            import hw_intf_keepkey as keepkey
-
-            return keepkey.sign_tx(hw_session, utxos_to_spend, tx_outputs, tx_fee)
-
-        elif hw_session.app_config.hw_type == HWType.ledger_nano_s:
+        if hw_session.app_config.hw_type == HWType.ledger_nano_s:
             import hw_intf_ledgernano as ledger
-
-            return ledger.sign_tx(hw_session, utxos_to_spend, tx_outputs, tx_fee)
-
+            ctrl.dlg_config_fun(dlg_title="Sign transaction", show_progress_bar=False, min_width=250)
+            ctrl.display_msg_fun('<b>Initialising...</b>')
+            return ledger.sign_tx(hw_session, utxos_to_spend, tx_outputs, tx_fee, ctrl)
         else:
-            logging.error('Invalid HW type: ' + str(hw_session.app_config.hw_type))
+            ctrl.dlg_config_fun(dlg_title="Confirm transaction signing.", show_progress_bar=False)
+            ctrl.display_msg_fun('<b>Please verify then confirm the transaction<br>on your hardware wallet.</b>')
+            if hw_session.app_config.hw_type == HWType.trezor:
+                import hw_intf_trezor as trezor
+                return trezor.sign_tx(hw_session, utxos_to_spend, tx_outputs, tx_fee)
+            elif hw_session.app_config.hw_type == HWType.keepkey:
+                import hw_intf_keepkey as keepkey
+                return keepkey.sign_tx(hw_session, utxos_to_spend, tx_outputs, tx_fee)
+            else:
+                logging.error('Invalid HW type: ' + str(hw_session.app_config.hw_type))
 
     # execute the 'prepare' function, but due to the fact that the call blocks the UI until the user clicks the HW
     # button, it's done inside a thread within a dialog that shows an appropriate message to the user
@@ -418,7 +417,7 @@ def get_address(hw_session: HwSessionInfo, bip32_path: str, show_display: bool =
     def _get_address(ctrl, hw_session: HwSessionInfo, bip32_path: str, show_display: bool = False,
                      message_to_display: str = None):
         if ctrl:
-            ctrl.dlg_config_fun(dlg_title=DEFAULT_HW_BUSY_TITLE, show_progress_bar=False)
+            ctrl.dlg_config_fun(dlg_title=CHECK_HW_TITLE, show_progress_bar=False)
             if message_to_display:
                 ctrl.display_msg_fun(message_to_display)
             else:
@@ -476,7 +475,7 @@ def get_address(hw_session: HwSessionInfo, bip32_path: str, show_display: bool =
         msg_delay = 0
     else:
         msg_delay = 1000
-        message_to_display = DEFAULT_HW_BUSY_MESSAGE
+        message_to_display = WAIT_HW_VERIFY_MESSAGE
 
     return WndUtils.run_thread_dialog(_get_address, (hw_session, bip32_path, show_display, message_to_display),
                                       True, show_window_delay_ms=msg_delay,
@@ -853,4 +852,69 @@ def hw_decrypt_value(hw_session: HwSessionInfo, bip32_path_n: List[int], label: 
     return WndUtils.run_thread_dialog(decrypt, (hw_session, bip32_path_n, label, value), True,
                                       force_close_dlg_callback=partial(cancel_hw_thread_dialog, hw_session.hw_client))
 
+def hw_app_install(hw_session: HwSessionInfo, device: str, testnet: bool):
 
+    def install(ctrl, device: str, testnet: bool) -> Tuple[int, str]:
+        """
+        Returns the result code and respective message after attempting an app install.
+        """
+
+        if device == "nanos":
+            import hw_intf_ledgernano
+            from ledgerblue.ecWrapper import PrivateKey
+            ledger = hw_intf_ledgernano.Installer(ctrl, testnet)
+
+            name = "GINcoin" if not testnet else "GINcoin Testnet"
+            tn   = ""        if not testnet else " testnet"
+            ctrl.dlg_config_fun(dlg_title=f"Install {name}", show_progress_bar=False, min_width=250)
+            ctrl.display_msg_fun(f"<b>Initialising...</b>")
+            results = {
+                0x0000: f"{name} app installed successfully! REMINDER: This install method is not officially endorsed by Ledger. You will see a 'non genuine' confirmation prompt upon launch of the app. This is normal, and functionality is unchanged. This prompt will not appear when installed with the official Ledger Live Manager.",
+                0x0001: f"Error: {name} app installation failed.",
+                0x0002: f"Error: {name} app post-install verification failed! Please remove the app (with `uninstall nanos{tn}`) and then report this issue.",
+                0x0003: f"Error: Your version of the Bitcoin app is unknown. Please update both GINware and the Bitcoin app on your Ledger device, and try again. If the issue persists, please report this issue.",
+                0x0004: f"Error: App validation hashes not found!",
+                0x0005: f"Error: {name} app pre-install validation failed! Please report this issue.",
+                0x6985: f"Error: Cancelled by user.",
+                0x6a81: f"Error: The {name} app already seems to be installed. Please remove the {name} app first (with `uninstall nanos{tn}`).",
+                0x6a83: f"Error: Please install the Bitcoin app first, through the Manager tab in Ledger Live.",
+                0x6a84: f"Error: Insufficient space on device.",
+                0x6a85: f"Error: Insufficient space on device.",
+                0x6d00: f"Error: Please close any open app on your Ledger Nano S device and try again.",
+                0x6f00: f"Error: Please connect and unlock your Ledger Nano S device."
+            }
+            res = ledger.install()
+        if res == 0:                    return (0, results.get(0))
+        elif results.get(res) == None:  return (2, results.get(1) + " (code: " + hex(res) + ")")
+        else:                           return (2, results.get(res))
+
+    return WndUtils.run_thread_dialog(install, (device, testnet), True, force_close_dlg_callback=partial(cancel_hw_thread_dialog, hw_session.hw_client))
+
+def hw_app_uninstall(hw_session: HwSessionInfo, device: str, testnet: bool):
+
+    def uninstall(ctrl, device: str, testnet: bool) -> Tuple[int, str]:
+        """
+        Returns the result code and respective message after attempting an app removal.
+        """
+
+        if device == "nanos":
+            import hw_intf_ledgernano
+            from ledgerblue.ecWrapper import PrivateKey
+            ledger = hw_intf_ledgernano.Installer(ctrl, testnet)
+
+            name = "GINcoin" if not testnet else "GINcoin Testnet"
+            ctrl.dlg_config_fun(dlg_title=f"Uninstall {name}", show_progress_bar=False, min_width=250)
+            ctrl.display_msg_fun(f"<b>Initialising...</b>")
+            results = {
+                0x0000: f"{name} app removed.",
+                0x0001: f"Error: {name} app removal failed.",
+                0x6985: f"Error: Cancelled by user.",
+                0x6d00: f"Error: Please close any open app on your Ledger Nano S device and try again.",
+                0x6f00: f"Error: Please connect and unlock your Ledger Nano S device."
+            }
+            res = ledger.uninstall()
+        if res == 0:                    return (0, results.get(0))
+        elif results.get(res) == None:  return (2, results.get(1) + " (code: " + hex(res) + ")")
+        else:                           return (2, results.get(res))
+
+    return WndUtils.run_thread_dialog(uninstall, (device, testnet), True, force_close_dlg_callback=partial(cancel_hw_thread_dialog, hw_session.hw_client))

@@ -622,7 +622,7 @@ class Installer:
             self.loader.load(0x0, 0xF0, printer, targetId=self.targetId, targetVersion=args["targetVersion"])
 
             ch = hvDict[hexVer][self.net].upper()
-            th = hvDict[hexVer][self.net[0] + "-ident"][av].upper()
+            th = hvDict[hexVer][self.net[0] + "-ident"][appVer].upper()
             link = "https://github.com/GIN-coin/ginware/releases/latest"
             self.msg(f"<b>- Step #3/4 -</b><br>"
                         "Check the following values and make sure they match on your hardware wallet screen:" + "<br><br>"
@@ -711,16 +711,16 @@ def chash(fileName) -> str:
     return binascii.hexlify(result).decode()
 
 def parse_bip32_path_i(path):
-        import struct
-        if len(path) == 0:
-                return b""
-        result = b""
-        elements = path.split("/")
-        result = result + struct.pack(">B", len(elements))
-        for pathElement in elements:
-                element = pathElement.split("\'")
-                if len(element) == 1:
-                        result = result + struct.pack(">I", int(element[0]))
-                else:
-                        result = result + struct.pack(">I", 0x80000000 | int(element[0]))
-        return result
+    import struct
+    if len(path) == 0:
+        return b""
+    result = b""
+    elements = path.split("/")
+    result = result + struct.pack(">B", len(elements))
+    for pathElement in elements:
+        element = pathElement.split("\'")
+        if len(element) == 1:
+            result = result + struct.pack(">I", int(element[0]))
+        else:
+            result = result + struct.pack(">I", 0x80000000 | int(element[0]))
+    return result

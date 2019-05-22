@@ -860,9 +860,8 @@ def hw_app_install(hw_session: HwSessionInfo, device: str, testnet: bool):
         """
 
         if device == "nanos":
-            import hw_intf_ledgernano
-            from ledgerblue.ecWrapper import PrivateKey
-            ledger = hw_intf_ledgernano.Installer(ctrl, testnet)
+            from hw_intf_ledgernano import Installer
+            ledger = Installer(ctrl, testnet)
 
             name = "GINcoin" if not testnet else "GINcoin Testnet"
             tn   = ""        if not testnet else " testnet"
@@ -875,6 +874,7 @@ def hw_app_install(hw_session: HwSessionInfo, device: str, testnet: bool):
                 0x0003: f"Error: Your version of the Bitcoin app is unknown. Please update both GINware and the Bitcoin app on your Ledger device, and try again. If the issue persists, please report this issue.",
                 0x0004: f"Error: App validation hashes not found!",
                 0x0005: f"Error: {name} app pre-install validation failed! Please report this issue.",
+                0x6484: f"Error: Are you sure you're using the latest firmware? Please update your Ledger device's firmware with the Ledger Live Manager.",
                 0x6985: f"Error: Cancelled by user.",
                 0x6a81: f"Error: The {name} app already seems to be installed. Please remove the {name} app first (with `uninstall nanos{tn}`).",
                 0x6a83: f"Error: Please install the Bitcoin app first, through the Manager tab in Ledger Live.",
@@ -898,9 +898,8 @@ def hw_app_uninstall(hw_session: HwSessionInfo, device: str, testnet: bool):
         """
 
         if device == "nanos":
-            import hw_intf_ledgernano
-            from ledgerblue.ecWrapper import PrivateKey
-            ledger = hw_intf_ledgernano.Installer(ctrl, testnet)
+            from hw_intf_ledgernano import Installer
+            ledger = Installer(ctrl, testnet)
 
             name = "GINcoin" if not testnet else "GINcoin Testnet"
             ctrl.dlg_config_fun(dlg_title=f"Uninstall {name}", show_progress_bar=False, min_width=250)
@@ -908,6 +907,7 @@ def hw_app_uninstall(hw_session: HwSessionInfo, device: str, testnet: bool):
             results = {
                 0x0000: f"{name} app removed.",
                 0x0001: f"Error: {name} app removal failed.",
+                0x6484: f"Error: Are you sure you're using the latest firmware? Please update your Ledger device's firmware with the Ledger Live Manager.",
                 0x6985: f"Error: Cancelled by user.",
                 0x6d00: f"Error: Please close any open app on your Ledger Nano S device and try again.",
                 0x6f00: f"Error: Please connect and unlock your Ledger Nano S device."

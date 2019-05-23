@@ -489,8 +489,8 @@ class MainWindow(QMainWindow, WndUtils, ui_main_dlg.Ui_MainWindow):
                             # if exe_url:
                             #     msg = "New version (v" + remote_version_str + ') available: <a href="' + exe_url + '">download</a>.'
                             # else:
-                            msg = "New version (v" + remote_version_str + ') available. Please see <a href="' + \
-                                    PROJECT_URL + '/releases">here</a>.'
+                            msg = (f"New version (v{remote_version_str}) available! "
+                                   f"Please see <a href=\"{PROJECT_URL}/releases/latest\">here</a>.")
 
                             self.setMessage(msg, 'green')
                         else:
@@ -1556,6 +1556,11 @@ class MainWindow(QMainWindow, WndUtils, ui_main_dlg.Ui_MainWindow):
         """
         Get current masternode's extended status.
         """
+        def closeWithStatus(masternode, status: str):
+            if not self.finishing:
+                if masternode != self.cur_masternode:
+                    status = ''
+                self.call_in_main_thread(self.lblMnStatus.setText, status)
 
         if self.dashd_connection_ok:
             if masternode.collateralTx and str(masternode.collateralTxIndex):
@@ -1568,8 +1573,9 @@ class MainWindow(QMainWindow, WndUtils, ui_main_dlg.Ui_MainWindow):
                 ip_port = None
 
             if not collateral_id and not ip_port:
-                if not masternode.collateralTx:
-                    return '<span style="color:red">Enter the collateral TX hash + index or IP + port</span>'
+                status = '<span style="color:red"><b>Error: Please enter either the collateral TX hash + index, or IP + port!</b></span>'
+                closeWithStatus(masternode, status)
+                return
 
             self.dashd_intf.get_masternodelist('full', data_max_age=30)  # read new data from the network
                                                                                     # every 30 seconds
@@ -1858,17 +1864,13 @@ class MainWindow(QMainWindow, WndUtils, ui_main_dlg.Ui_MainWindow):
                              queue_info_html + \
                              errors_msg + warnings_msg + '</table>'
                 else:
-                    status = '<span style="color:red">Masternode not found.</span>'
+                    status = '<span style="color:red"><b>Error: Masternode not found.</b></span>'
             else:
-                status = '<span style="color:red">Masternode not found.</span>'
+                status = '<span style="color:red"><b>Error: Masternode not found.</b></span>'
         else:
-            status = '<span style="color:red">Problem with connection to dashd.</span>'
+            status = '<span style="color:red"><b>Error: GINcoin daemon connection problem.</b></span>'
 
-        if not self.finishing:
-            if masternode != self.cur_masternode:
-                status = ''
-
-            self.call_in_main_thread(self.lblMnStatus.setText, status)
+        closeWithStatus(masternode, status)
 
     @pyqtSlot(bool)
     def on_btnRefreshMnStatus_clicked(self):

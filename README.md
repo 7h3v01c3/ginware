@@ -1,6 +1,6 @@
 <p align="center">
 <img src="img/github_banner.png"><br>
-<span style="font-size:20px;">A hardware wallet tool for <a href="https://gincoin.io">GINcoin</a></span><br><br>
+<span style="font-size:20px;">A <a href="https://gincoin.io"><b>GIN</b>coin</a> hard<b>ware</b> wallet tool</span><br><br>
 <a href="https://github.com/GIN-coin/ginware/releases/latest"><img alt="Release" src="https://img.shields.io/github/release/GIN-coin/ginware.svg?logo=data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAA4AAAAOCAYAAAAfSC3RAAAAIGNIUk0AAHolAACAgwAA+f8AAIDpAAB1MAAA6mAAADqYAAAXb5JfxUYAAADbSURBVHjavNI9LoRRFMbx51VIJBIKDdFIbEFhHRqFaYQxL4XYwDT2QOdjBdZgBRhieo2GhAXIT+EWb2ZuNYWTPLm55zz/k3tPToPMEnOZMWrgIMlzklGSp3K2Uy50dYVPHGOz6ADvuO56u9AhvrE20SxYKbWjGviKfgUa4hw9vNTAETawhcWSO/MX+1jCYw18KE+6wz1OC9Qr9fXSfAocYxfzeCvQzsQMxjWwXwawUO7bndoqvjCogcENPrCH5fLntuRuu96msnJtkpMkP0maosskF11T8++7+jsA8Dt9+WlNmEYAAAAASUVORK5CYII="></a>
 <br>
 <a href="https://travis-ci.com/GIN-coin/ginware"><img alt="Build" src="https://img.shields.io/travis/com/GIN-coin/ginware/master.svg?logo=data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAA4AAAAOCAYAAAAfSC3RAAAAIGNIUk0AAHolAACAgwAA+f8AAIDpAAB1MAAA6mAAADqYAAAXb5JfxUYAAACwSURBVHjavJK9DcJADIXf0UDLHmQBfiSYABgBMgQCsUwEWSljpAuh+2gcYcBpUmDpySf7PZ/PvgRoiI000PqEmaTaMAsZQIcEbIE5cOdtN2AB7Iwj4EN4NGLLrz3NHzq+b3VjfiLpIelsaCWNLbeOWp0ClVW+uPjVYpVxfm7s2wvh2VUu3Jsa4GRoXLyIhpN/DSIaTh4JE7AHVkDpRCWwtFy4Do8MqA1ZxEl//6uvAQB6oVy7zMld5QAAAABJRU5ErkJggg=="></a>

@@ -141,6 +141,13 @@
             <height>0</height>
            </size>
           </property>
+          <property name="cursor">
+           <cursorShape>WhatsThisCursor</cursorShape>
+          </property>
+          <property name="toolTip">
+           <string>A custom label for the masternode.
+This is just for you, it is not sent to the network.</string>
+          </property>
           <property name="layoutDirection">
            <enum>Qt::LeftToRight</enum>
           </property>
@@ -193,6 +200,12 @@
             <height>0</height>
            </size>
           </property>
+          <property name="cursor">
+           <cursorShape>WhatsThisCursor</cursorShape>
+          </property>
+          <property name="toolTip">
+           <string>The IP address of the masternode.</string>
+          </property>
           <property name="layoutDirection">
            <enum>Qt::LeftToRight</enum>
           </property>
@@ -225,6 +238,12 @@
         </item>
         <item>
          <widget class="QLabel" name="lblPort">
+          <property name="cursor">
+           <cursorShape>WhatsThisCursor</cursorShape>
+          </property>
+          <property name="toolTip">
+           <string>The peer-to-peer network port of the masternode. Leave at the default value.</string>
+          </property>
           <property name="text">
            <string>port</string>
           </property>
@@ -251,6 +270,12 @@
         </item>
         <item>
          <widget class="QLabel" name="lblProtocolVersion">
+          <property name="cursor">
+           <cursorShape>WhatsThisCursor</cursorShape>
+          </property>
+          <property name="toolTip">
+           <string>The protocol version of the masternode.</string>
+          </property>
           <property name="text">
            <string>Protocol version</string>
           </property>
@@ -297,6 +322,12 @@
             <height>0</height>
            </size>
           </property>
+          <property name="cursor">
+           <cursorShape>WhatsThisCursor</cursorShape>
+          </property>
+          <property name="toolTip">
+           <string>The address that the collateral was sent to.</string>
+          </property>
           <property name="text">
            <string>Collateral address</string>
           </property>
@@ -331,6 +362,12 @@
         </item>
         <item>
          <widget class="QLabel" name="lblCollateralPath">
+          <property name="cursor">
+           <cursorShape>WhatsThisCursor</cursorShape>
+          </property>
+          <property name="toolTip">
+           <string>The BIP32 path of your hardware wallet that corresponds to the address which the collateral was sent to.</string>
+          </property>
           <property name="text">
            <string>path</string>
           </property>
@@ -377,6 +414,12 @@
             <height>0</height>
            </size>
           </property>
+          <property name="cursor">
+           <cursorShape>WhatsThisCursor</cursorShape>
+          </property>
+          <property name="toolTip">
+           <string>The hash of the collateral transaction.</string>
+          </property>
           <property name="text">
            <string>Collateral TX hash</string>
           </property>
@@ -394,6 +437,12 @@
         </item>
         <item>
          <widget class="QLabel" name="lblCollateralTxIndex">
+          <property name="cursor">
+           <cursorShape>WhatsThisCursor</cursorShape>
+          </property>
+          <property name="toolTip">
+           <string>The index of the output corresponding to the collateral in the collateral transaction.</string>
+          </property>
           <property name="text">
            <string>index</string>
           </property>
@@ -420,6 +469,9 @@
             <width>144</width>
             <height>0</height>
            </size>
+          </property>
+          <property name="cursor">
+           <cursorShape>WhatsThisCursor</cursorShape>
           </property>
           <property name="text">
            <string>DMN TX hash</string>
@@ -457,6 +509,13 @@
             <width>144</width>
             <height>0</height>
            </size>
+          </property>
+          <property name="cursor">
+           <cursorShape>WhatsThisCursor</cursorShape>
+          </property>
+          <property name="toolTip">
+           <string>The private key for the masternode.
+Used for the `masternode start` message and other masternode-related broadcasts.</string>
           </property>
           <property name="text">
            <string>Masternode private key</string>
@@ -545,6 +604,9 @@
             <height>0</height>
            </size>
           </property>
+          <property name="cursor">
+           <cursorShape>WhatsThisCursor</cursorShape>
+          </property>
           <property name="text">
            <string>Owner private key</string>
           </property>
@@ -623,6 +685,9 @@
             <height>0</height>
            </size>
           </property>
+          <property name="cursor">
+           <cursorShape>WhatsThisCursor</cursorShape>
+          </property>
           <property name="text">
            <string>Operator private key</string>
           </property>
@@ -700,6 +765,9 @@
             <width>144</width>
             <height>0</height>
            </size>
+          </property>
+          <property name="cursor">
+           <cursorShape>WhatsThisCursor</cursorShape>
           </property>
           <property name="text">
            <string>Voting private key</string>
